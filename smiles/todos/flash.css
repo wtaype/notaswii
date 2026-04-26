@@ -1,0 +1,222 @@
+/* =====================================================
+   FLASH.CSS — Modo Flash
+   Escritura instantánea y minimalista para NotasWii
+===================================================== */
+
+.fl_wrap {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 8vh 2vw 10vh;
+  display: flex;
+  flex-direction: column;
+  gap: 8vh;
+}
+
+/* ── HERO & INPUT ── */
+.fl_hero {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fl_badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: color-mix(in srgb, #FFB800 15%, transparent);
+  color: #FFB800;
+  border-radius: 20px;
+  font-size: var(--fz_s4);
+  font-weight: 700;
+  margin-bottom: 2vh;
+  border: 1px solid color-mix(in srgb, #FFB800 30%, transparent);
+}
+
+.fl_title {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 800;
+  color: var(--tx);
+  margin-bottom: 1.5vh;
+  letter-spacing: -0.5px;
+}
+
+.fl_sub {
+  font-size: var(--fz_m2);
+  color: var(--tx2);
+  margin-bottom: 6vh;
+}
+
+.fl_input_box {
+  width: 100%;
+  max-width: 650px;
+  position: relative;
+  background: var(--wb);
+  border-radius: 1.5vh;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+  border: 2px solid var(--brd);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2vh 2vh;
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5vh;
+  z-index: 2;
+}
+
+.fl_input_box.active {
+  border-color: #FFB800;
+  box-shadow: 0 15px 50px color-mix(in srgb, #FFB800 15%, transparent);
+  transform: translateY(-4px);
+}
+
+/* Efecto de luz detrás del input (Glow) */
+.fl_input_box::before {
+  content: '';
+  position: absolute;
+  top: -30%; left: -10%; right: -10%; bottom: -30%;
+  background: radial-gradient(circle, color-mix(in srgb, #FFB800 12%, transparent) 0%, transparent 60%);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+.fl_input_box.active::before { opacity: 1; }
+
+.fl_textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: var(--fz_l1);
+  color: var(--tx);
+  resize: none;
+  min-height: 4.5vh;
+  max-height: 35vh;
+  line-height: 1.5;
+  padding: 0.5vh 1vh;
+}
+
+.fl_textarea::placeholder { color: var(--tx3); font-weight: 400; }
+
+.fl_btn_send {
+  width: 5.5vh;
+  height: 5.5vh;
+  border-radius: 1vh;
+  background: var(--bg3);
+  color: var(--tx2);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fz_m3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.fl_input_box.active .fl_btn_send {
+  background: #FFB800;
+  color: #fff;
+  transform: scale(1.05);
+}
+.fl_input_box.active .fl_btn_send:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 5px 15px color-mix(in srgb, #FFB800 40%, transparent);
+}
+
+.fl_hint {
+  margin-top: 2.5vh;
+  font-size: var(--fz_s3);
+  color: var(--tx3);
+}
+.fl_hint strong { color: var(--tx2); font-weight: 600; }
+
+/* ── TIMELINE ── */
+.fl_timeline {
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.fl_timeline_tit {
+  font-size: var(--fz_m3);
+  font-weight: 700;
+  color: var(--tx2);
+  margin-bottom: 3vh;
+  display: flex;
+  align-items: center;
+  gap: 2vh;
+}
+.fl_timeline_tit::after {
+  content: '';
+  flex-grow: 1;
+  height: 2px;
+  background: var(--brd);
+  border-radius: 2px;
+}
+
+.fl_grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+}
+
+.fl_card {
+  background: var(--wb);
+  border-radius: 1vh;
+  padding: 2.5vh;
+  border: 1px solid var(--brd);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s, box-shadow 0.35s;
+  position: relative;
+}
+
+/* Pequeña marca visual a la izquierda */
+.fl_card::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 15%;
+  bottom: 15%;
+  width: 3px;
+  background: #FFB800;
+  border-radius: 0 4px 4px 0;
+  opacity: 0;
+  transform: scaleY(0);
+  transition: all 0.3s;
+}
+
+.fl_card:hover {
+  transform: translateX(6px);
+  border-color: color-mix(in srgb, #FFB800 50%, var(--brd));
+  box-shadow: 0 12px 32px rgba(0,0,0,0.06);
+}
+.fl_card:hover::before {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.fl_card_time {
+  font-size: var(--fz_s3);
+  color: #FFB800;
+  font-weight: 700;
+  margin-bottom: 1.5vh;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fl_card_body {
+  font-size: var(--fz_m2);
+  color: var(--tx);
+  line-height: 1.6;
+}
+
+.fl_empty {
+  text-align: center;
+  padding: 6vh;
+  color: var(--tx3);
+  font-style: italic;
+  font-size: var(--fz_m2);
+}

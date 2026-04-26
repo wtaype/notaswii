@@ -1,0 +1,19 @@
+{
+  "name": "notaswii",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "dev:live": "vite --host"
+  },
+  "devDependencies": {
+    "vite": "^8.0.10"
+  },
+  "dependencies": {
+    "firebase": "^12.12.1",
+    "jquery": "^4.0.0"
+  }
+}

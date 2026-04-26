@@ -1,0 +1,646 @@
+/* ==================== CHATWIIL IA ==================== */
+.miia {
+  height: 94vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  font-family: var(--ff_P);
+  position: relative;
+}
+
+/* ========== MESSAGES AREA ========== */
+.miia_messages {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 3vh 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2vh;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mco) transparent;
+  width: 100%;
+  max-width: 50vw;
+  margin: 0 auto;
+}
+
+.miia_messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.miia_messages::-webkit-scrollbar-thumb {
+  background: var(--mco);
+  border-radius: 4px;
+}
+
+/* ========== EMPTY STATE ========== */
+.miia_empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4vh 2vw;
+  width: 100%;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.miia_welcome_icon {
+  width: 11vh;
+  height: 11vh;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2.5vh;
+  animation: float 3s ease-in-out infinite;
+  position: relative;
+}
+
+.miia_welcome_icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(var(--mco), var(--bg2), var(--mco));
+  animation: rotar 4s linear infinite;
+  z-index: -1;
+  opacity: 0.5;
+}
+
+@keyframes rotar {
+  to { transform: rotate(360deg); }
+}
+
+.miia_welcome_icon i {
+  font-size: var(--fz_x1);
+  color: var(--txa);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+.miia_welcome_title {
+  font-size: var(--fz_l2);
+  font-weight: 800;
+  color: var(--tx);
+  margin-bottom: 1.5vh;
+  font-family: var(--ff_O);
+  background: linear-gradient(135deg, var(--mco), var(--bg2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.miia_welcome_text {
+  font-size: var(--fz_m4);
+  color: var(--tx3);
+  line-height: 1.7;
+  margin-bottom: 3.5vh;
+  max-width: 38rem;
+}
+
+.miia_welcome_text strong {
+  color: var(--mco);
+  font-weight: 700;
+}
+
+/* ========== SUGGESTIONS ========== */
+.miia_suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2vh;
+  width: 100%;
+}
+
+.suggestion_card {
+  display: flex;
+  align-items: center;
+  gap: 1.5vh;
+  padding: 2vh 1.5vw;
+  background: var(--wb);
+  border: 2px solid var(--bg5);
+  border-radius: 1.5vh;
+  cursor: pointer;
+  transition: all var(--tr_m);
+  font-size: var(--fz_m2);
+  font-weight: 600;
+  color: var(--tx);
+  text-align: left;
+}
+
+.suggestion_card i {
+  font-size: var(--fz_l1);
+  color: var(--mco);
+  min-width: 3vh;
+  transition: transform var(--tr_m);
+}
+
+.suggestion_card:hover {
+  border-color: var(--mco);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px var(--bg5);
+  background: var(--bg4);
+}
+
+.suggestion_card:hover i {
+  transform: scale(1.2);
+}
+
+
+/* ========== CONTEXTUAL SUGGESTIONS ========== */
+.miia_contextual_suggestions {
+  width: 100%;
+  padding: 2vh 0;
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestions_title {
+  font-size: var(--fz_m2);
+  color: var(--txe);
+  margin-bottom: 1.5vh;
+  font-weight: 600;
+  text-align: center;
+}
+
+.suggestions_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1vh;
+  width: 100%;
+}
+
+.suggestion_card_small {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  padding: 1.2vh 1.5vw;
+  background: var(--bg1);
+  border: 1px solid var(--bg5);
+  border-radius: 0.8vh;
+  cursor: pointer;
+  transition: all var(--tr_f);
+  font-size: var(--fz_m2);
+  font-weight: 500;
+  color: var(--tx);
+}
+
+.suggestion_card_small i {
+  font-size: var(--fz_m3);
+  color: var(--mco);
+  min-width: 2vh;
+}
+
+.suggestion_card_small:hover {
+  background: var(--bg5);
+  border-color: var(--mco);
+  transform: translateX(3px);
+}
+
+/* ========== MESSAGES ========== */
+.miia_message {
+  display: flex;
+  gap: 1.5vh;
+  animation: messageSlide 0.4s ease;
+  width: 100%;
+}
+
+@keyframes messageSlide {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.miia_message.user {
+  flex-direction: row-reverse;
+}
+
+.message_avatar {
+  width: 4.5vh;
+  height: 4.5vh;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: var(--fz_m5);
+}
+
+.miia_message.user .message_avatar {
+  background: var(--mco);
+  color: var(--txa);
+}
+
+.miia_message.ai .message_avatar {
+  background: var(--bg2);
+  color: var(--txa);
+}
+
+.message_content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Fondo solo para mensajes de IA cuando están escribiendo */
+.miia_message.ai .message_content {
+  background: var(--bg1);
+  border-radius: 1vh;
+  padding: 1.5vh;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all var(--tr_f);
+}
+
+.miia_message.ai .message_content:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Sin fondo para mensajes de usuario */
+.miia_message.user .message_content {
+  background: transparent;
+}
+
+.message_header {
+  display: flex;
+  align-items: center;
+  gap: 1vh;
+  margin-bottom: 0.8vh;
+}
+
+.miia_message.user .message_header {
+  justify-content: flex-end;
+}
+
+.message_name {
+  font-weight: 700;
+  font-size: var(--fz_m2);
+  color: var(--tx);
+}
+
+.message_time {
+  font-size: var(--fz_s4);
+  color: var(--txe);
+  opacity: 0.8;
+}
+
+.message_text {
+  padding: 1.5vh 2vw;
+  border-radius: 1.5vh;
+  line-height: 1.7;
+  background: var(--bg1);
+  font-size: var(--fz_m3);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.miia_message.user .message_text {
+  background: var(--mco);
+  color: var(--txa);
+  border-bottom-right-radius: 0.3vh;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.miia_message.ai .message_text {
+  background: var(--wb);
+  color: var(--tx);
+  border: 1px solid var(--bg5);
+  border-bottom-left-radius: 0.3vh;
+}
+
+/* ========== TYPING INDICATOR ========== */
+.typing_dots {
+  display: flex;
+  gap: 0.5vh;
+  padding: 0.5vh 0;
+}
+
+.typing_dots span {
+  width: 8px;
+  height: 8px;
+  background: var(--mco);
+  border-radius: 50%;
+  animation: typing 1.4s infinite;
+}
+
+.typing_dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing_dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+/* Sin fondo cuando está pensando (typing indicator) */
+.miia_message.typing .message_content {
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ========== INPUT AREA ========== */
+.miia_input_area {
+  padding: 2vh 0 2.5vh;
+  border-top: 1px solid var(--bg5);
+  background: var(--bg);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.miia_input_wrapper {
+  width: 100%;
+  max-width: 50vw;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 1vh;
+  padding: 0 2vw;
+}
+
+.miia_input {
+  flex: 1;
+  min-height: 5.5vh;
+  max-height: 15vh;
+  padding: 1.5vh 2vw;
+  background: var(--wb);
+  border: 2px solid var(--bg5);
+  border-radius: 1.5vh;
+  font-family: var(--ff_P);
+  font-size: var(--fz_m3);
+  color: var(--tx);
+  resize: none;
+  outline: none;
+  transition: all var(--tr_m);
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+.miia_input:focus {
+  border-color: var(--mco);
+  box-shadow: 0 0 0 4px var(--bg4), 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.miia_input::placeholder {
+  color: var(--txe);
+  opacity: 0.6;
+}
+
+.miia_send {
+  width: 5.5vh;
+  height: 5.5vh;
+  background: var(--bg5);
+  border: none;
+  border-radius: 50%;
+  color: var(--tx);
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--tr_m);
+  font-size: var(--fz_m4);
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
+.miia_send.active {
+  background: var(--mco);
+  color: var(--txa);
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  opacity: 1;
+}
+
+.miia_send.active:hover {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.miia_send:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.miia_input_info {
+  text-align: center;
+  margin-top: 1vh;
+  font-size: var(--fz_s4);
+  color: var(--txe);
+  opacity: 0.7;
+}
+
+.miia_input_info kbd {
+  padding: 0.2vh 0.8vh;
+  background: var(--bg5);
+  border-radius: 0.4vh;
+  font-family: var(--ff_P);
+  font-size: var(--fz_s3);
+  font-weight: 600;
+  color: var(--tx);
+  margin: 0 0.3vh;
+}
+
+.miia_input_info i {
+  color: var(--mco);
+  margin-right: 0.5vh;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .miia_messages {
+    max-width: 70vw;
+  }
+
+  .miia_input_wrapper {
+    max-width: 70vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .miia_messages {
+    max-width: 90vw;
+    padding: 2vh 3vw;
+  }
+
+  .miia_input_wrapper {
+    max-width: 90vw;
+  }
+
+  .miia_welcome_title {
+    font-size: var(--fz_l1);
+  }
+
+  .miia_welcome_text {
+    font-size: var(--fz_m2);
+  }
+
+  .miia_suggestions {
+    grid-template-columns: 1fr;
+  }
+
+  .suggestions_grid {
+    grid-template-columns: 1fr;
+  }
+
+  .message_text {
+    font-size: var(--fz_m2);
+  }
+
+  .miia_input {
+    font-size: var(--fz_m2);
+  }
+
+  .miia_input_info {
+    font-size: var(--fz_s3);
+  }
+}
+
+@media (max-width: 480px) {
+  .miia_messages {
+    max-width: 95vw;
+  }
+
+  .miia_input_wrapper {
+    max-width: 95vw;
+    padding: 0 3vw;
+  }
+
+  .miia_welcome_icon {
+    width: 8vh;
+    height: 8vh;
+  }
+
+  .miia_welcome_icon i {
+    font-size: var(--fz_l2);
+  }
+
+  .miia_input_wrapper {
+    gap: 0.8vh;
+  }
+
+  .miia_send {
+    width: 5vh;
+    height: 5vh;
+  }
+}
+
+
+/* ========== MODERN AVATAR ========== */
+.miia_avatar_img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Avatar grande en la bienvenida (Premium Glassmorphism) */
+.miia_welcome_icon {
+  width: 14vh;
+  height: 14vh;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2.5vh;
+  position: relative;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px;
+  z-index: 1;
+}
+
+.miia_welcome_icon::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--mco), transparent 60%, var(--mco));
+  animation: rotarPremium 4s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotarPremium {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.miia_welcome_icon .miia_avatar_img {
+  border-radius: 50%;
+  border: 3px solid var(--bg);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+}
+
+.miia_welcome_icon:hover .miia_avatar_img {
+  transform: scale(1.05);
+}
+
+/* Avatar pequeño en los mensajes */
+.message_avatar {
+  width: 4.5vh;
+  height: 4.5vh;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--bg2);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.message_avatar::before {
+  content: '';
+  position: absolute;
+  top: -2px; bottom: -2px;
+  left: -2px; right: -2px;
+  background: linear-gradient(135deg, var(--mco), var(--bg4));
+  z-index: -1;
+  border-radius: 50%;
+}
+
+.message_avatar i {
+  font-size: var(--fz_m4);
+}

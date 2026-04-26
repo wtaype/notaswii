@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // Regla general: requiere auth
+    match /{document=**} {
+      allow read, write: if request.auth != null; 
+    }
+
+    // Colección de perfiles, publico crea y valida si hay usuarios disponibles, actualizar y eliminar solo smile 
+    match /smiles/{document} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
+    }  
+
+    // Colección de perfiles públicos (Linkwiis) - lee y actualiza solo campo vistas, los demás con auth 
+    match /blog/{document} {
+      allow read: if true;
+      allow update: if (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vistas']))
+                    || request.auth != null;
+    }
+  }
+}

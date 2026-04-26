@@ -1,0 +1,396 @@
+/* ══════════════════════════════════════════════════
+   MISNOTAS.CSS — v2.0 · NotasWii
+   Layout: Editor (izq) | Lista (der)
+   Inspirado en biblia.css — border-radius: 1vh
+══════════════════════════════════════════════════ */
+
+/* ── WRAP ── */
+.mn_wrap {
+  height: 93vh; display: flex; flex-direction: column;
+  font-family: var(--ff_O); max-width: 1600px; margin: 0 auto;
+  padding: 0 2vw 2vh; gap: 1.5vh;
+}
+
+/* ── HEADER ── */
+.mn_header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.5vh; flex-wrap: wrap; padding: 1.5vh 0 .5vh;
+}
+.mn_header_left { display: flex; align-items: baseline; gap: 1.2vh; flex-shrink: 0; }
+.mn_titulo {
+  font-size: var(--fz_m5); font-weight: 800; color: var(--tx);
+  display: flex; align-items: center; gap: .8vh; margin: 0;
+}
+.mn_titulo i { color: var(--mco); }
+.mn_count {
+  font-size: var(--fz_s3); color: var(--txe); font-weight: 600;
+  background: var(--bg4); padding: .3vh 1.2vh; border-radius: 1vh;
+  border: 1px solid var(--brd);
+}
+.mn_header_right { display: flex; align-items: center; gap: 1.2vh; flex-wrap: wrap; }
+
+/* ── BÚSQUEDA ── */
+.mn_search_box {
+  position: relative; display: flex; align-items: center;
+  background: var(--wb); border: 1.5px solid var(--brd);
+  border-radius: 1vh; overflow: hidden;
+  transition: border-color .25s, box-shadow .25s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.mn_search_box:focus-within {
+  border-color: var(--mco);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mco) 12%, transparent);
+}
+.mn_search_ico {
+  position: absolute; left: 1.4vh; color: var(--tx3);
+  font-size: var(--fz_m1); pointer-events: none; transition: color .2s;
+}
+.mn_search_box:focus-within .mn_search_ico { color: var(--mco); }
+.mn_search {
+  width: 200px; padding: 1.1vh 3.5vh 1.1vh 4vh;
+  border: none; outline: none; background: transparent;
+  font-size: var(--fz_m1); font-family: var(--ff_O); color: var(--tx);
+}
+.mn_search_clear {
+  position: absolute; right: 1vh;
+  background: none; border: none; color: var(--tx3);
+  cursor: pointer; font-size: var(--fz_m1); padding: 0 .4vh;
+  transition: color .2s;
+}
+.mn_search_clear:hover { color: var(--error); }
+
+/* ── FILTROS (iconos compactos en header) ── */
+.mn_filtros {
+  display: flex; gap: .6vh;
+}
+.mn_filtro {
+  width: 3.8vh; height: 3.8vh;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--wb); border: 1.5px solid var(--brd);
+  border-radius: 1vh; font-size: var(--fz_m1); color: var(--tx3);
+  font-family: var(--ff_O); cursor: pointer;
+  transition: all var(--tr_f);
+}
+.mn_filtro:hover   { border-color: var(--fc, var(--mco)); color: var(--fc, var(--mco)); }
+.mn_filtro.active  {
+  background: color-mix(in srgb, var(--fc, var(--mco)) 12%, var(--bg4));
+  border-color: var(--fc, var(--mco)); color: var(--fc, var(--mco));
+}
+
+/* ── LAYOUT DUAL: editor izq | lista der ── */
+.mn_layout {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 2vh; flex: 1; min-height: 0;
+}
+
+/* ══════════════════════════════════════════════════
+   PANEL EDITOR (IZQUIERDA — siempre visible)
+══════════════════════════════════════════════════ */
+.mn_panel {
+  background: var(--wb); border: 1.5px solid var(--brd);
+  border-radius: 1vh; display: flex; flex-direction: column;
+  overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,.06);
+  height: 100%;
+}
+
+.mn_panel_head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 2vh 2vh 1.5vh; border-bottom: 1px solid var(--brd);
+  background: var(--bg4); flex-shrink: 0;
+}
+.mn_panel_tit { font-size: var(--fz_m4); font-weight: 800; color: var(--tx); margin: 0; }
+.mn_panel_new {
+  display: inline-flex; align-items: center; gap: .5vh;
+  padding: .5vh 1.4vh; border-radius: 1vh;
+  border: 1.5px solid var(--brd); background: var(--wb);
+  color: var(--mco); font-size: var(--fz_m1); font-weight: 700;
+  font-family: var(--ff_O); cursor: pointer;
+  transition: all var(--tr_f); white-space: nowrap;
+}
+.mn_panel_new:hover { background: var(--mco); color: #fff; border-color: var(--mco); }
+
+/* ── FORMULARIO ── */
+.mn_form {
+  flex: 1; overflow-y: auto; padding: 2vh;
+  display: flex; flex-direction: column; gap: 1.5vh;
+  scrollbar-width: thin; scrollbar-color: var(--brd) transparent;
+}
+.mn_form::-webkit-scrollbar { width: .4vh; }
+.mn_form::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 1vh; }
+
+.mn_form_row { display: flex; flex-direction: column; gap: .6vh; }
+.mn_row_flex { flex: 1; display: flex; flex-direction: column; }
+
+/* Selector de tipo */
+.mn_tipo_sel { display: flex; gap: .7vh; flex-wrap: wrap; }
+.mn_tipo_btn {
+  display: inline-flex; align-items: center; gap: .5vh;
+  background: var(--wb); border: 1.5px solid var(--brd);
+  border-radius: 1vh; padding: .7vh 1.2vh;
+  font-size: var(--fz_s4); font-weight: 600; color: var(--tx3);
+  font-family: var(--ff_O); cursor: pointer; transition: all var(--tr_f);
+}
+.mn_tipo_btn:hover  { border-color: var(--tc, var(--mco)); color: var(--tc, var(--mco)); }
+.mn_tipo_btn.active {
+  background: color-mix(in srgb, var(--tc, var(--mco)) 12%, var(--bg4));
+  border-color: var(--tc, var(--mco)); color: var(--tc, var(--mco)); font-weight: 700;
+}
+
+/* Inputs */
+.mn_inp {
+  width: 100%; padding: 1.1vh 1.4vh; border-radius: 1vh;
+  border: 1.5px solid var(--brd); background: var(--bg4);
+  font-size: var(--fz_m2); font-family: var(--ff_O); color: var(--tx);
+  outline: none; transition: border-color .25s, box-shadow .25s;
+  box-sizing: border-box;
+}
+.mn_inp:focus {
+  border-color: var(--mco); background: var(--wb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mco) 12%, transparent);
+}
+.mn_inp_link { font-size: var(--fz_m3); }
+
+.mn_textarea {
+  width: 100%; flex: 1; min-height: 200px; padding: 1.2vh 1.4vh;
+  border-radius: 1vh; border: 1.5px solid var(--brd);
+  background: var(--bg4); font-size: var(--fz_m2);
+  font-family: var(--ff_O); color: var(--tx);
+  outline: none; resize: none; /* sin resize — ocupa el espacio disponible */
+  transition: border-color .25s, box-shadow .25s;
+  box-sizing: border-box; line-height: 1.7;
+}
+.mn_textarea:focus {
+  border-color: var(--mco); background: var(--wb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mco) 12%, transparent);
+}
+.mn_char_count {
+  font-size: var(--fz_s3); color: var(--tx3); text-align: right; font-weight: 600;
+}
+.mn_char_warn { color: var(--warning); }
+
+/* Toggle fijar */
+.mn_row_pin { flex-direction: row; align-items: center; }
+.mn_toggle_label {
+  display: flex; align-items: center; gap: 1vh; cursor: pointer;
+  font-size: var(--fz_m1); font-weight: 600; color: var(--tx2); user-select: none;
+}
+.mn_toggle_label input { display: none; }
+.mn_toggle {
+  width: 40px; height: 22px; border-radius: 1vh;
+  background: var(--brd); position: relative; flex-shrink: 0; transition: background .25s;
+}
+.mn_toggle::after {
+  content: ''; position: absolute; width: 16px; height: 16px;
+  top: 3px; left: 3px; border-radius: 1vh; background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,.2); transition: left .25s;
+}
+.mn_toggle_label input:checked ~ .mn_toggle { background: var(--mco); }
+.mn_toggle_label input:checked ~ .mn_toggle::after { left: 21px; }
+
+/* Botón guardar */
+.mn_form_acts { margin-top: auto; padding-top: 1vh; }
+.mn_btn_save {
+  width: 100%; padding: 1.4vh; border-radius: 1vh; border: none;
+  background: linear-gradient(135deg, var(--mco), var(--bg2));
+  color: #fff; font-size: var(--fz_m2); font-weight: 700;
+  font-family: var(--ff_O); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: .8vh;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--mco) 30%, transparent);
+  transition: all var(--tr_m); position: relative;
+}
+.mn_btn_save:hover { filter: brightness(1.1); transform: translateY(-2px); }
+.mn_shortcut {
+  position: absolute; right: 1.5vh;
+  font-size: var(--fz_s3); opacity: .7; font-weight: 500;
+}
+
+/* Banner auth */
+.mn_auth_banner {
+  display: flex; flex-direction: column; align-items: center; gap: 1vh;
+  background: color-mix(in srgb, var(--mco) 8%, var(--bg4));
+  border: 1.5px dashed color-mix(in srgb, var(--mco) 30%, var(--brd));
+  border-radius: 1vh; padding: 1.8vh; text-align: center;
+}
+.mn_auth_banner i { font-size: var(--fz_l1); color: var(--mco); }
+.mn_auth_banner p { font-size: var(--fz_m1); color: var(--txe); margin: 0; line-height: 1.5; }
+.mn_btn_login {
+  display: inline-flex; align-items: center; gap: .7vh;
+  padding: .9vh 2vh; border-radius: 1vh; border: none;
+  background: var(--mco); color: #fff;
+  font-size: var(--fz_m1); font-weight: 700; font-family: var(--ff_O);
+  cursor: pointer; transition: all var(--tr_f);
+}
+.mn_btn_login:hover { filter: brightness(1.1); }
+
+/* ══════════════════════════════════════════════════
+   LISTA DE NOTAS (DERECHA)
+══════════════════════════════════════════════════ */
+.mn_grid {
+  display: flex; flex-wrap: wrap; gap: 1.2vh;
+  align-content: start;
+  overflow-y: auto; padding-right: .5vh;
+  scrollbar-width: thin; scrollbar-color: var(--brd) transparent;
+}
+.mn_grid::-webkit-scrollbar { width: .4vh; }
+.mn_grid::-webkit-scrollbar-thumb { background: var(--brd); border-radius: 1vh; }
+
+/* Skeleton */
+.mn_skeleton {
+  height: 130px; border-radius: 1vh; flex-shrink: 0;
+  flex: 1 1 calc(25% - 1vh); min-width: 200px;
+  background: linear-gradient(90deg, var(--bg4) 25%, var(--bg5) 50%, var(--bg4) 75%);
+  background-size: 200% 100%;
+  animation: mn_shimmer 1.4s infinite;
+}
+@keyframes mn_shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── TARJETA ── */
+.mn_card {
+  background: var(--wb); border: 1.5px solid var(--brd);
+  border-radius: 1vh; padding: 1.6vh 1.6vh 1.4vh;
+  display: flex; flex-direction: column; gap: .8vh;
+  transition: border-color .35s, transform .35s, box-shadow .35s, background .35s;
+  position: relative; cursor: pointer; flex-shrink: 0;
+  overflow: hidden; /* necesario para mn_card_bar */
+  flex: 1 1 calc(25% - 1vh); min-width: 200px; min-height: 130px;
+}
+.mn_card:hover {
+  border-color: var(--bc, var(--mco));
+  transform: translateY(-5px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.12);
+  background: color-mix(in srgb, var(--bc, var(--mco)) 4%, var(--wb));
+}
+.mn_card_active {
+  border-color: var(--bc, var(--mco)) !important;
+  background: color-mix(in srgb, var(--bc, var(--mco)) 6%, var(--wb)) !important;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--bc, var(--mco)) 20%, transparent) !important;
+}
+
+/* Barra superior que se expande desde la izquierda (patrón ini_cat_bar) */
+.mn_card_bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--bc, var(--mco));
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .38s cubic-bezier(.4,0,.2,1);
+}
+.mn_card:hover .mn_card_bar,
+.mn_card_active .mn_card_bar { transform: scaleX(1); }
+
+.mn_card_top {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* Badge: cambia a fondo sólido y rota en hover (patrón ini_cat_ico) */
+.mn_badge {
+  display: inline-flex; align-items: center; gap: .4vh;
+  background: color-mix(in srgb, var(--bc, var(--mco)) 12%, var(--bg4));
+  border: 1px solid color-mix(in srgb, var(--bc, var(--mco)) 22%, var(--brd));
+  color: var(--bc, var(--mco)); border-radius: 1vh;
+  padding: .3vh .9vh; font-size: var(--fz_s3); font-weight: 700;
+  transition: background .3s, color .3s, transform .3s; flex-shrink: 0;
+}
+.mn_badge i { font-size: var(--fz_s3); }
+.mn_card:hover .mn_badge {
+  background: var(--bc, var(--mco)); color: #fff;
+  transform: scale(1.06) rotate(-4deg);
+}
+
+/* Acciones: se deslizan desde la derecha (como ini_ext) */
+.mn_card_acts {
+  display: flex; gap: .4vh;
+  opacity: 0; transform: translateX(8px);
+  transition: opacity .2s, transform .2s;
+}
+.mn_card:hover .mn_card_acts { opacity: 1; transform: translateX(0); }
+.mn_act {
+  width: 2.8vh; height: 2.8vh; border-radius: 1vh; border: none;
+  background: var(--bg4); color: var(--tx3); font-size: var(--fz_s3);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background var(--tr_f), color var(--tr_f), transform var(--tr_f);
+}
+.mn_act:hover         { transform: scale(1.15); }
+.mn_act_copy:hover    { background: var(--info);  color: #fff; }
+.mn_act_del:hover     { background: var(--error); color: #fff; }
+
+.mn_card_tit {
+  font-size: var(--fz_m2); font-weight: 700; color: var(--tx1);
+  margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mn_card_body {
+  font-size: var(--fz_m1); color: var(--tx3); line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.mn_card_link {
+  display: inline-flex; align-items: center; gap: .4vh;
+  font-size: var(--fz_s4); color: var(--mco); font-weight: 600;
+  text-decoration: none; word-break: break-all;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mn_card_link:hover { opacity: .75; }
+
+.mn_card_foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: .8vh; border-top: 1px solid var(--brd); margin-top: auto;
+}
+.mn_card_foot_right {
+  display: flex; align-items: center; gap: .5vh;
+}
+.mn_fecha { font-size: var(--fz_s3); color: var(--tx3); display: flex; align-items: center; gap: .4vh; }
+.mn_pin   { color: #FFB800; font-size: var(--fz_m1); }
+
+/* Flecha fantasma — aparece al hover como ini_ext */
+.mn_card_arr {
+  font-size: var(--fz_s3); color: var(--bc, var(--mco));
+  opacity: 0; transform: translateX(-4px);
+  transition: opacity .2s, transform .2s, color .2s;
+}
+.mn_card:hover .mn_card_arr { opacity: 1; transform: translateX(0); }
+
+/* ── VACÍO ── */
+.mn_empty {
+  text-align: center; padding: 6vh 2vh;
+  display: flex; flex-direction: column; align-items: center; gap: 1.5vh;
+}
+.mn_empty_ico {
+  width: 64px; height: 64px; background: var(--bg4); border-radius: 1vh;
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--fz_l1); color: var(--mco); border: 2px dashed var(--brd);
+}
+.mn_empty h3 { font-size: var(--fz_m4); font-weight: 700; color: var(--tx); margin: 0; }
+.mn_empty p  { font-size: var(--fz_m2); color: var(--txe); margin: 0; }
+
+/* ── FAB MÓVIL ── */
+.mn_fab {
+  display: none; position: fixed; bottom: 9vh; right: 2.5vh;
+  width: 52px; height: 52px; border-radius: 1vh; border: none;
+  background: linear-gradient(135deg, var(--mco), var(--bg2));
+  color: #fff; font-size: var(--fz_l1); cursor: pointer;
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--mco) 40%, transparent);
+  transition: all var(--tr_m); z-index: 400;
+  display: none; align-items: center; justify-content: center;
+}
+.mn_fab:hover { filter: brightness(1.1); transform: scale(1.08); }
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .mn_layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .mn_panel  { height: auto; min-height: 0; max-height: 55vh; }
+  .mn_grid   { max-height: 50vh; }
+  .mn_card, .mn_skeleton { flex: 1 1 calc(50% - 1vh); }
+}
+@media (max-width: 768px) {
+  .mn_wrap   { padding: 0 1.5vh 2vh; }
+  .mn_header { gap: 1vh; }
+  .mn_search { width: 150px; }
+  .mn_fab    { display: flex; }
+  .mn_card, .mn_skeleton { flex: 1 1 calc(50% - 1vh); }
+}
+@media (max-width: 480px) {
+  .mn_search { width: 120px; }
+  .mn_tipo_btn span { display: none; }
+  .mn_shortcut { display: none; }
+  .mn_card, .mn_skeleton { flex: 1 1 100%; }
+}
