@@ -1,5 +1,6 @@
 import $ from 'jquery';
-import {app, lanzamiento, by, linkme, version} from './wii.js';
+import { app, lanzamiento, by, linkme, version, icon } from './wii.js';
+import { wiAuth } from './widev.js';
 
 export { footer };
 function footer(){
@@ -13,7 +14,7 @@ function footer(){
           <span class="foo_ver">${version}</span>
         </div>
         <div class="foo_links">
-          <a href="/terminos.html" class="foo_link" target="_blank"><i class="fas fa-file-contract"></i> Términos</a>
+          <a href="/terminos.html" class="foo_link" target="_blank"><i class="fas fa-file-contract"></i> Términos y condiciones</a>
           <a href="/cookies.html" class="foo_link" target="_blank"><i class="fas fa-cookie-bite"></i> Cookies</a>
         </div>
       </div>
@@ -25,19 +26,25 @@ function footer(){
   `;
 }; $('body').append(footer());  //Actualizar 
 
-$("head").append(`<style>:root{--bgim:url("${import.meta.env.BASE_URL}wpuntos.svg")}body{background: var(--bgim), var(--bg)}</style>`)
+$("head").append(`<style>:root{--bgim:url("${import.meta.env.BASE_URL}wpuntos.svg")}body{background: var(--bgim), var(--bg)}</style>`);
 
-// MOBILE DRAWER v3.0
-const authHtml = () => `${$('.nv_right').html()}`;
-$('body').append(`<div class="movil_overlay"></div>
+// MOBILE DRAWER v4.0
+$('body').append(`
+<div class="movil_overlay"></div>
 <nav class="movil_drawer" role="navigation" aria-label="Menú móvil">
   <button class="movil_close" aria-label="Cerrar menú"><i class="fas fa-times"></i></button>
-  <div class="movil_logo"><i class="fas fa-heart"></i> ${app}</div>
-  <div class="movil_nav">${$('.winav').html()}${authHtml()}</div>
+  <div class="movil_logo"></div>
+  <div class="movil_nav"></div>
 </nav>`);
-const sync = () => { const $d = $('.movil_nav .movil_divider'); $d.nextAll().remove(); $d.remove(); $('.movil_nav').append(authHtml()); };
-new MutationObserver(sync).observe($('.nv_right')[0], { childList: true, subtree: true });
+
+const syncDrawer = () => setTimeout(() => {
+  $('.movil_logo').html($('.wilogo').html() || `<i class="fa-solid ${icon}"></i> ${app}`);
+  $('.movil_nav').html(`${$('.winav').html() || ''}${$('.nv_right').html() || ''}`);
+}, 50);
+
+wiAuth.on(syncDrawer);
+$(syncDrawer); // Carga inicial
+
 const cerrar = () => $('body').removeClass('movil_open');
-$('.wimenu').on('click', () => $('body').addClass('movil_open'));
-$('.movil_close, .movil_overlay').on('click', cerrar);
-$(document).on('click', '.movil_nav .nv_item, .movil_nav .bt_auth, .movil_nav .bt_salir', cerrar);
+$(document).on('click', '.wimenu', () => $('body').addClass('movil_open'));
+$(document).on('click', '.movil_close, .movil_overlay, .movil_nav .nv_item, .movil_nav button', cerrar);
