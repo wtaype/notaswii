@@ -5,11 +5,22 @@ export { footer };
 function footer(){
   const ahora = new Date();
   return `
-  <footer class="foo wb txc psa">
-    <span>Creado con <i class="fas fa-heart"></i> by <a class="ftx lkme" href="${linkme}" target="_blank">${by}</a></span>
-    <span>${lanzamiento} - <span class="wty">${ahora.getFullYear()}</span></span>
-    <span class="abw"> | ${app} ${version} | actualizado:
-    <span class="wtu">${ahora.toLocaleString()}</span></span>
+  <footer class="foo">
+    <div class="foo_inner">
+      <div class="foo_left">
+        <div class="foo_brand">
+          <span class="foo_app">${app}</span>
+          <span class="foo_ver">${version}</span>
+        </div>
+        <div class="foo_links">
+          <a href="/terminos.html" class="foo_link" target="_blank"><i class="fas fa-file-contract"></i> Términos</a>
+          <a href="/cookies.html" class="foo_link" target="_blank"><i class="fas fa-cookie-bite"></i> Cookies</a>
+        </div>
+      </div>
+      <div class="foo_right">
+        <span>Creado con <i class="fas fa-heart" style="color:var(--mco);"></i> by <a href="${linkme}" target="_blank"><strong>${by}</strong></a> 2024 - ${ahora.getFullYear()}</span>
+      </div>
+    </div>
   </footer>
   `;
 }; $('body').append(footer());  //Actualizar 

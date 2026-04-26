@@ -676,16 +676,97 @@
 
     .foo {
       width: 100%;
-      text-align: center;
-      padding-block: 1.5vh 1vh;
-      background: var(--wb);
-      border-radius: 1vh 1vh 0 0
+      background: var(--bg);
+      border-top: 1px solid var(--brd);
+      margin-top: auto;
+      padding: 2vh 0;
     }
 
-    .foo * {
-      font-size: var(--fz_s2);
-      margin-inline: .3vh;
+    .foo_inner {
+      max-width: 75vw;
+      margin: 0 auto;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5vh;
+    }
+
+    .foo_left {
+      display: flex;
+      align-items: center;
+      gap: 2vh;
+      flex-wrap: wrap;
+    }
+
+    .foo_brand {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8vh;
+    }
+
+    .foo_app {
+      font-size: var(--fz_m2);
+      font-weight: 800;
       color: var(--tx);
+      letter-spacing: -0.5px;
+    }
+
+    .foo_ver {
+      font-size: var(--fz_s1);
+      font-family: var(--ff_O), monospace;
+      font-weight: 700;
+      color: var(--tx3);
+      background: var(--bg5);
+      padding: 0.2vh 0.6vh;
+      border-radius: 1vh;
+    }
+
+    .foo_links {
+      display: flex;
+      align-items: center;
+      gap: 1.5vh;
+      padding-left: 1.5vh;
+      border-left: 1px solid var(--brd);
+      flex-wrap: wrap;
+    }
+
+    .foo_link {
+      color: var(--tx2);
+      font-size: var(--fz_s2);
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .foo_link:hover { color: var(--mco); }
+
+    .foo_right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: var(--fz_s2);
+      color: var(--tx3);
+      flex-wrap: wrap;
+    }
+
+    .foo_right a {
+      color: var(--tx2);
+      font-weight: 700;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .foo_right a:hover {
+      color: var(--mco);
+    }
+
+    @media (max-width: 1400px) {
+      .foo_inner { max-width: 85vw; }
+    }
+    @media (max-width: 900px) {
+      .foo_inner { max-width: 90vw; flex-direction: column; justify-content: center; text-align: center; gap: 2vh; }
+      .foo_left, .foo_right { justify-content: center; flex-direction: column; gap: 1.5vh; }
+      .foo_links { padding-left: 0; border-left: none; justify-content: center; }
     }
 
     /* ==================== UTILIDADES EXTRA ==================== */
