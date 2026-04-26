@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="Paz">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Política de Cookies - LinkWii</title>
+  <link rel="icon" href="/smile.png">
+  <meta name="theme-color" content="#29C72E">
+  <meta name="description"
+    content="Política de Cookies de LinkWii - Información sobre cómo utilizamos las cookies para mejorar tu experiencia en nuestra plataforma.">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Rubik:wght@400;500;700&display=swap');
+    @import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css);
+
+    :root {
+      --fz_s: clamp(0.78rem, 1vw, 0.88rem);
+      --fz_m: clamp(0.9rem, 1.2vw, 1rem);
+      --fz_l: clamp(1.1rem, 1.8vw, 1.3rem);
+      --fz_xl: clamp(1.5rem, 3vw, 2.2rem);
+      --fz_h: clamp(2rem, 4vw, 3rem);
+      --tr: 0.3s cubic-bezier(.4, 0, .2, 1);
+      --ff_P: 'Poppins', 'Segoe UI', system-ui;
+      --ff_R: 'Rubik', 'Segoe UI', system-ui;
+      --F: #fff;
+      --0: #000;
+      --D: #ddd;
+      --success: #3cd741;
+      --error: #ff3849;
+      --warning: #ffa726;
+      --info: #00a8e6;
+      --Paz: #29C72E;
+      --Mora: #7000FF;
+      --Futuro: #21273B;
+      /* Tema Paz */
+      --bg: #ccffce;
+      --wb: #ebffeb;
+      --tx: #000;
+      --txa: #FFF;
+      --txe: #000;
+      --hv: #3cd741;
+      --hva: #25b62a;
+      --mco: #25b62a;
+      --bg1: #ffffff42;
+      --bg2: #25b62a;
+      --bg3: #ebffeb;
+      --bg4: rgba(37, 182, 42, 0.1);
+      --bg5: rgba(37, 182, 42, 0.2);
+      --bs: 0 4px 24px rgba(0, 0, 0, 0.10);
+    }
+
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    * {
+      font-family: var(--ff_P);
+      scrollbar-width: thin;
+      scrollbar-color: var(--mco) var(--bg);
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--tx);
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      animation: fadeIn .7s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1
+      }
+    }
+
+    /* ── NAV ── */
+    .t_nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2vh 4vw;
+      background: var(--wb);
+      border-bottom: 2px solid var(--bg5);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--bs);
+    }
+
+    .t_nav .logo {
+      font-size: var(--fz_l);
+      font-weight: 700;
+      color: var(--mco);
+      display: flex;
+      align-items: center;
+      gap: .6vw;
+    }
+
+    .t_nav .logo i {
+      animation: pulse 2.5s ease infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.15)
+      }
+    }
+
+    .t_nav .nav_tag {
+      background: var(--bg4);
+      border: 1px solid var(--bg5);
+      border-radius: 2rem;
+      padding: .4vh 1.4vw;
+      font-size: var(--fz_s);
+      color: var(--mco);
+      font-weight: 600;
+    }
+
+    /* ── MAIN ── */
+    .t_main {
+      flex: 1;
+      max-width: 900px;
+      width: 95%;
+      margin: 4vh auto 6vh;
+      padding: 0 1vw;
+    }
+
+    /* ── HERO ── */
+    .t_hero {
+      text-align: center;
+      padding: 4vh 3vw 3vh;
+      background: var(--wb);
+      border-radius: 2vh;
+      border: 1px solid var(--bg5);
+      box-shadow: var(--bs);
+      margin-bottom: 3vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .t_hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 0%, var(--bg5) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .t_hero h1 {
+      font-size: var(--fz_h);
+      font-weight: 700;
+      color: var(--mco);
+      margin-bottom: 1vh;
+    }
+
+    .t_hero h1 i {
+      margin-right: .5rem;
+    }
+
+    .t_hero .subtitle {
+      font-size: var(--fz_m);
+      opacity: .8;
+      margin-bottom: 2vh;
+    }
+
+    .t_hero .meta_row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1vw;
+    }
+
+    .t_hero .meta_row span {
+      background: var(--bg1);
+      border: 1px solid var(--bg5);
+      border-radius: 1rem;
+      padding: .5vh 1.4vw;
+      font-size: var(--fz_s);
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+      transition: var(--tr);
+    }
+
+    .t_hero .meta_row span:hover {
+      background: var(--bg4);
+      transform: translateY(-2px);
+    }
+
+    .t_hero .meta_row i {
+      color: var(--mco);
+    }
+
+    /* ── ALERT ── */
+    .t_alert {
+      background: var(--bg4);
+      border-left: 4px solid var(--mco);
+      border: 1px solid var(--bg5);
+      border-radius: 1.2vh;
+      padding: 1.6vh 2vw;
+      margin-bottom: 3vh;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .t_alert i {
+      color: var(--mco);
+      font-size: 1.2rem;
+      margin-top: .1rem;
+      flex-shrink: 0;
+    }
+
+    .t_alert p {
+      font-size: var(--fz_m);
+      line-height: 1.7;
+    }
+
+    /* ── SECTIONS ── */
+    .t_sections {
+      display: flex;
+      flex-direction: column;
+      gap: 2vh;
+    }
+
+    .t_section {
+      background: var(--wb);
+      border: 1px solid var(--bg5);
+      border-radius: 1.8vh;
+      padding: 2.5vh 2.5vw;
+      box-shadow: var(--bs);
+      border-left: 5px solid var(--mco);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp .5s ease forwards;
+    }
+
+    .t_section:nth-child(1) { animation-delay: .05s }
+    .t_section:nth-child(2) { animation-delay: .10s }
+    .t_section:nth-child(3) { animation-delay: .15s }
+    .t_section:nth-child(4) { animation-delay: .20s }
+    .t_section:nth-child(5) { animation-delay: .25s }
+
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .t_section:hover {
+      background: var(--bg4);
+      transform: translateX(4px);
+    }
+
+    .t_section h2 {
+      font-size: var(--fz_l);
+      font-weight: 700;
+      color: var(--mco);
+      margin-bottom: 1.2vh;
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+    }
+
+    .t_section h2 i {
+      background: var(--bg4);
+      border: 1px solid var(--bg5);
+      border-radius: 1vh;
+      padding: .5rem .6rem;
+      font-size: 1rem;
+    }
+
+    .t_section p {
+      font-size: var(--fz_m);
+      line-height: 1.75;
+      margin-bottom: 1.2vh;
+    }
+
+    .t_section ul {
+      list-style: none;
+      padding: 0;
+      margin-top: .8vh;
+    }
+
+    .t_section ul li {
+      padding: .7vh 0 .7vh 2.2rem;
+      position: relative;
+      font-size: var(--fz_m);
+      border-bottom: 1px solid var(--bg5);
+      transition: var(--tr);
+    }
+
+    .t_section ul li:last-child {
+      border-bottom: none;
+    }
+
+    .t_section ul li::before {
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      left: .2rem;
+      color: var(--mco);
+    }
+
+    .t_section ul li:hover {
+      color: var(--mco);
+      padding-left: 2.6rem;
+    }
+
+    /* ── FOOTER ── */
+    .t_footer {
+      text-align: center;
+      padding: 3.5vh 2vw 2vh;
+      border-top: 2px solid var(--bg5);
+      margin-top: 5vh;
+      background: var(--wb);
+    }
+
+    .t_footer p {
+      font-size: var(--fz_s);
+      margin-bottom: .8vh;
+      line-height: 1.6;
+    }
+
+    .t_footer strong {
+      color: var(--mco);
+    }
+
+    .t_footer .version {
+      opacity: .6;
+      font-size: .78rem;
+    }
+
+    .btn_back {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      padding: 1.2vh 2.5vw;
+      background: linear-gradient(135deg, var(--mco), var(--hv));
+      color: var(--txa);
+      border: none;
+      border-radius: 1vh;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--tr);
+      margin-top: 1.5vh;
+      font-size: var(--fz_m);
+      box-shadow: 0 4px 16px var(--bg5);
+    }
+
+    .btn_back:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 8px 24px var(--bg5);
+    }
+
+    .btn_back i {
+      transition: transform .3s;
+    }
+
+    .btn_back:hover i {
+      transform: translateX(-4px);
+    }
+
+    @media(max-width:640px) {
+      .t_nav {
+        padding: 1.2vh 3vw;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="t_nav">
+    <div class="logo">
+      <i class="fas fa-keyboard"></i> LinkWii
+    </div>
+    <span class="nav_tag"><i class="fas fa-cookie-bite"></i> Política de Cookies</span>
+  </nav>
+
+  <main class="t_main">
+
+    <!-- HERO -->
+    <div class="t_hero">
+      <h1><i class="fas fa-cookie-bite"></i> Política de Cookies</h1>
+      <p class="subtitle">Transparencia sobre cómo protegemos y mejoramos tu experiencia.</p>
+      <div class="meta_row">
+        <span><i class="fas fa-calendar-alt"></i> Actualizado: Abril 2026</span>
+        <span><i class="fas fa-shield-alt"></i> Seguridad Activa</span>
+        <span><i class="fas fa-globe"></i> LinkWii</span>
+      </div>
+    </div>
+
+    <!-- ALERT PRINCIPAL -->
+    <div class="t_alert">
+      <i class="fas fa-info-circle"></i>
+      <p><strong>¿Qué son las cookies?</strong> Son pequeños archivos de texto que se guardan en tu navegador cuando visitas nuestra plataforma. Las usamos para mantener tu sesión activa, recordar tus preferencias y brindarte un servicio más rápido y seguro.</p>
+    </div>
+
+    <!-- SECCIONES -->
+    <div class="t_sections">
+
+      <div class="t_section">
+        <h2><i class="fas fa-lock"></i> 1. Cookies Estrictamente Necesarias</h2>
+        <p>Estas cookies son fundamentales para que LinkWii funcione correctamente. Sin ellas, no podrías iniciar sesión ni editar tus enlaces.</p>
+        <ul>
+          <li><strong>Autenticación:</strong> Mantienen tu sesión abierta de forma segura mediante Firebase Auth.</li>
+          <li><strong>Seguridad:</strong> Previenen ataques maliciosos o inicios de sesión fraudulentos.</li>
+          <li><strong>Preferencias de UI:</strong> Recuerdan si usas el panel en modo claro u oscuro.</li>
+        </ul>
+      </div>
+
+      <div class="t_section">
+        <h2><i class="fas fa-chart-line"></i> 2. Cookies de Análisis y Rendimiento</h2>
+        <p>Utilizamos estas cookies para entender cómo usas nuestra plataforma y así mejorar su velocidad y diseño constantemente.</p>
+        <ul>
+          <li>Analizar qué plantillas o ejemplos son los más visitados.</li>
+          <li>Medir la velocidad de carga de tus perfiles públicos.</li>
+          <li>Detectar errores de navegación para solucionarlos rápidamente.</li>
+        </ul>
+      </div>
+
+      <div class="t_section">
+        <h2><i class="fas fa-cogs"></i> 3. Gestión de Cookies</h2>
+        <p>Tienes el control total. Puedes configurar tu navegador para bloquear o eliminar las cookies en cualquier momento, aunque esto podría afectar tu experiencia dentro del editor de LinkWii.</p>
+        <ul>
+          <li>Puedes borrarlas desde los ajustes de privacidad de tu navegador.</li>
+          <li>Usar ventanas de "Incógnito" para que no se guarden tras cerrar la ventana.</li>
+          <li>Las cookies esenciales de autenticación son requeridas si deseas iniciar sesión.</li>
+        </ul>
+      </div>
+
+    </div><!-- /t_sections -->
+
+    <div class="t_footer">
+      <p><strong>Nos tomamos en serio tu privacidad. No vendemos tus datos a terceros ni usamos cookies intrusivas.</strong></p>
+      <p>Nuestra misión es darte la mejor plataforma para gestionar tus enlaces.</p>
+      <p class="version">Versión 2.0 — © 2026 LinkWii · Wilder Taype. Todos los derechos reservados.</p>
+      <a href="/" class="btn_back"><i class="fas fa-arrow-left"></i> Volver a LinkWii</a>
+    </div>
+
+  </main>
+
+</body>
+</html>
