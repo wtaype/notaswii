@@ -1,35 +1,109 @@
 import './links.css';
 import $ from 'jquery';
-import { app } from '../wii.js';
-import { showi, Notificacion, wiAuth, wicopy } from '../widev.js';
+import { app, version } from '../wii.js';
+import { showi, Notificacion, wiAuth, wiTip, wicopy, getls, savels, Saludar, wiFade } from '../widev.js';
 
-// ════════════════════════════════════════════════════════════
-// 🔗 LINKS: Guardado Rápido de Enlaces
-// ════════════════════════════════════════════════════════════
-
+// ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY = 'links';
-const cargarLocal = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } };
-const guardarLocal = (ns) => localStorage.setItem(LS_KEY, JSON.stringify(ns));
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const uid    = () => 'lk' + Date.now();
+const ls     = {
+  get: ()  => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } },
+  set: (d) => localStorage.setItem(LS_KEY, JSON.stringify(d))
+};
+const cacheOk  = ()  => !!getls('lk_sync');
+const marcarOk = ()  => savels('lk_sync', 1, 168);
 
-// Extraer un dominio limpio para el título automático
 const extractDomain = (url) => {
   try {
     let hostname = new URL(url).hostname;
     hostname = hostname.replace('www.', '');
     return hostname.split('.')[0] || 'Enlace';
-  } catch {
-    return 'Enlace Web';
-  }
+  } catch { return 'Enlace Web'; }
 };
 
-// ── RENDER PRINCIPAL ──────────────────────────────────────────
-export const render = () => `
+// ── TEMPLATES ────────────────────────────────────────────────
+const tplCard = (l) => {
+  const init = l.titulo ? l.titulo.charAt(0).toUpperCase() : 'L';
+  const displayUrl = l.contenido || l.url || '';
+  return `
+  <article class="lk_card${l.pin ? ' lk_pinned' : ''}" id="lk_${l.id}" data-id="${l.id}">
+    <div class="lk_icon">${init}</div>
+    <div class="lk_info">
+      <input type="text" class="lk_tit" value="${l.titulo || ''}" placeholder="Título del enlace...">
+      <a href="${displayUrl}" target="_blank" rel="noopener" class="lk_url" title="${displayUrl}">${displayUrl}</a>
+    </div>
+    
+    <div class="lk_acts">
+      <button class="lk_act lk_act_copy" data-id="${l.id}" ${wiTip('Copiar URL', undefined, 'top')}><i class="far fa-copy"></i></button>
+      <button class="lk_act lk_act_pin${l.pin ? ' active' : ''}" data-id="${l.id}" ${wiTip(l.pin ? 'Quitar pin' : 'Fijar', undefined, 'top')}><i class="fas fa-thumbtack"></i></button>
+      <a href="${displayUrl}" target="_blank" rel="noopener" class="lk_act" ${wiTip('Abrir', undefined, 'top')}><i class="fas fa-external-link-alt"></i></a>
+      <button class="lk_act lk_act_del" data-id="${l.id}" ${wiTip('Eliminar', undefined, 'error')}><i class="fas fa-trash-can"></i></button>
+    </div>
+    <i class="lk_act_cloud fas ${l.synced ? 'fa-cloud lk_cloud_ok' : 'fa-cloud-arrow-up lk_cloud_pen'}" ${wiTip(l.synced ? 'En nube' : 'Local', undefined, 'left')}></i>
+  </article>`;
+};
+
+// ── FIRESTORE ────────────────────────────────────────────────
+const getFS = async () => {
+  const { db } = await import('../firebase.js');
+  return { db, ...await import('firebase/firestore') };
+};
+
+const guardarNube = async (l) => {
+  const wi = wiAuth.user; if (!wi?.usuario) return;
+  try {
+    const { db, doc, setDoc, serverTimestamp } = await getFS();
+    await setDoc(doc(db, 'links', l.id), {
+      id: l.id, usuario: wi.usuario, email: wi.email,
+      titulo: String(l.titulo || ''), contenido: String(l.contenido || l.url || ''),
+      pin: !!l.pin, creado: serverTimestamp(), actualizado: serverTimestamp()
+    });
+  } catch(e) { console.error('[links] guardarNube:', e); }
+};
+
+const actualizarNube = async (l) => {
+  const wi = wiAuth.user; if (!wi?.usuario) return;
+  try {
+    const { db, doc, updateDoc, serverTimestamp } = await getFS();
+    await updateDoc(doc(db, 'links', l.id), {
+      titulo: String(l.titulo || ''), contenido: String(l.contenido || l.url || ''),
+      pin: !!l.pin, actualizado: serverTimestamp()
+    });
+  } catch(e) { console.error('[links] actualizarNube:', e); }
+};
+
+const eliminarNube = async (id) => {
+  const wi = wiAuth.user; if (!wi?.usuario) return;
+  try { const { db, doc, deleteDoc } = await getFS(); await deleteDoc(doc(db, 'links', id)); } catch {}
+};
+
+const cargarNube = async () => {
+  const wi = wiAuth.user; if (!wi?.email) return null;
+  try {
+    const { db, collection, getDocs, query, where } = await getFS();
+    const snap = await getDocs(query(collection(db, 'links'), where('email', '==', wi.email)));
+    return snap.docs.map(d => {
+      const x = d.data();
+      return {
+        id: d.id, titulo: x.titulo || '', contenido: x.contenido || x.url || '',
+        pin: !!x.pin, creado: x.creado?.toMillis?.() || Date.now(), synced: true
+      };
+    });
+  } catch { return null; }
+};
+
+// ── RENDER HTML ──────────────────────────────────────────────
+export const render = () => {
+  const saludo = wiAuth.user ? `${Saludar()}${wiAuth.user.nombre || wiAuth.user.usuario}` : 'Tus Enlaces Rápidos';
+  return `
 <div class="lk_wrap">
   <div class="lk_hero">
     <div class="lk_hero_left">
-      <h1><i class="fas fa-link"></i> Enlaces Rápidos</h1>
-      <p id="lk_count" class="lk_count">0 guardados</p>
+      <h1><i class="fas fa-link"></i> ${saludo}</h1>
+      <span id="lk_count" class="lk_count">0 guardados</span>
+    </div>
+    <div class="lk_hero_right">
+      <button class="lk_btn_refresh" id="lk_btn_refresh" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
     </div>
   </div>
   
@@ -39,177 +113,142 @@ export const render = () => `
     <button id="lk_btn_add" class="lk_btn_add"><i class="fas fa-plus"></i> Guardar</button>
   </div>
 
-  <div id="lk_grid" class="lk_grid"></div>
-</div>
-`;
-
-// ── TEMPLATES ──────────────────────────────────────────────────
-const tplCard = (l) => {
-  // Generar letra inicial para el ícono si no se sabe
-  const init = l.titulo ? l.titulo.charAt(0).toUpperCase() : 'L';
-  
-  return `
-  <article class="lk_card" id="lk_${l.id}" data-id="${l.id}">
-    <div class="lk_icon">
-      ${init}
-    </div>
-    
-    <div class="lk_info">
-      <input type="text" class="lk_tit" value="${l.titulo}" placeholder="Título del enlace...">
-      <a href="${l.url}" target="_blank" rel="noopener" class="lk_url" title="${l.url}">${l.url}</a>
-    </div>
-    
-    <div class="lk_actions">
-      <button class="lk_btn_act copy" title="Copiar URL"><i class="far fa-copy"></i></button>
-      <button class="lk_btn_act del" title="Eliminar"><i class="fas fa-trash-can"></i></button>
-      <a href="${l.url}" target="_blank" rel="noopener" class="lk_btn_act" title="Abrir enlace"><i class="fas fa-external-link-alt"></i></a>
-    </div>
-  </article>
-  `;
+  <div id="lk_grid" class="lk_grid">
+    <div class="lk_skeleton"></div><div class="lk_skeleton"></div><div class="lk_skeleton"></div>
+  </div>
+</div>`;
 };
 
-// ── LÓGICA DE ESTADO ──────────────────────────────────────────
-let links = [];
+// ── INIT ─────────────────────────────────────────────────────
+export const init = async () => {
+  let links = ls.get();
 
-const renderTodo = () => {
-  $('#lk_count').text(`${links.length} guardado${links.length !== 1 ? 's' : ''}`);
-  
-  if (!links.length) {
-    $('#lk_grid').html(`
-      <div class="lk_empty">
-        <i class="fas fa-satellite-dish"></i>
-        <span>No tienes enlaces guardados. Pega uno arriba para empezar.</span>
-      </div>
-    `);
-  } else {
-    $('#lk_grid').html(links.map(tplCard).join(''));
-  }
-};
+  const skeleton = () => $('#lk_grid').html('<div class="lk_skeleton"></div>'.repeat(3));
+  const cloudSync = (id) => $(`[data-id="${id}"] .lk_act_cloud`)
+    .removeClass('fa-cloud-arrow-up lk_cloud_pen').addClass('fa-cloud lk_cloud_ok')
+    .attr('data-witip', 'En nube');
 
-const sincronizarNube = async () => {
-  if (!wiAuth.logged) return;
-  try {
-    const { db } = await import('../firebase.js');
-    const { doc, setDoc } = await import('firebase/firestore');
-    // En una app real de miles de links, preferirías setDoc individual al agregar
-    // Aquí actualizamos en batch para mantener sincronía total
-    const ops = links.map(l => setDoc(doc(db, 'usuarios', wiAuth.user.usuario, 'links', l.id), l));
-    await Promise.all(ops);
-  } catch (e) {
-    console.error('Error sincronizando links', e);
-  }
-};
+  const resumen = () => $('#lk_count').text(`${links.length} guardado${links.length !== 1 ? 's' : ''}`);
 
-// ── EVENTOS Y CICLO DE VIDA ────────────────────────────────────
-export const init = () => {
-  links = cargarLocal().sort((a, b) => b.creado - a.creado);
-  renderTodo();
-  
-  // Animación inicial
-  showi(['.lk_hero_left', '.lk_add_box', '.lk_card'], 60);
+  const sorted = () => [...links].sort((a,b) => {
+    if (a.pin && !b.pin) return -1;
+    if (!a.pin && b.pin) return 1;
+    return (b.creado||0) - (a.creado||0);
+  });
 
-  const evNamespace = '.lk';
-  $(document).off(evNamespace); // Limpiar previo
+  const render$ = async () => {
+    const lista = sorted();
+    await wiFade('#lk_grid', lista.length
+      ? lista.map(tplCard).join('')
+      : `<div class="lk_empty"><i class="fas fa-satellite-dish"></i><span>No tienes enlaces guardados. Pega uno arriba para empezar.</span></div>`,
+      80);
+    if (lista.length) showi(['.lk_grid > *'], 60);
+    resumen();
+  };
+
+  const syncNube = async (useSkeleton = false) => {
+    if (!wiAuth.logged) return;
+    if (useSkeleton) skeleton();
+    const $ico = $('#lk_btn_refresh i').addClass('lk_spin');
+    try {
+      const remotos = await cargarNube();
+      if (remotos?.length) {
+        const idsRem  = new Set(remotos.map(l => l.id));
+        const locales = links.filter(l => !idsRem.has(l.id));
+        locales.forEach(l => guardarNube(l));
+        links = [...remotos, ...locales];
+        ls.set(links);
+        marcarOk();
+      }
+    } finally { $ico.removeClass('lk_spin'); render$(); }
+  };
+
+  const findLink = (id) => links.find(l => l.id === id);
 
   const agregarLink = () => {
     const $in = $('#lk_in_url');
     let url = $in.val().trim();
     if (!url) return;
-    
-    // Auto-completar esquema HTTP si el usuario escribe "google.com"
     if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
     
-    // Extraer nombre del dominio para el título automático
     const domainName = extractDomain(url);
     const titulo = domainName.charAt(0).toUpperCase() + domainName.slice(1);
+    const n = { id: uid(), titulo, contenido: url, pin: false, creado: Date.now(), synced: false };
     
-    const newLink = { id: uid(), url, titulo, creado: Date.now() };
+    links.unshift(n);
+    ls.set(links);
+    $in.val('');
     
-    links.unshift(newLink);
-    guardarLocal(links);
-    sincronizarNube();
-    
-    $in.val(''); // Limpiar input
-    
-    // Insertar en la UI sin recargar todo el grid
     $('.lk_empty').remove();
-    const $newCard = $(tplCard(newLink));
-    $('#lk_grid').prepend($newCard);
-    
-    // Animamos solo la nueva tarjeta
-    showi([`#lk_${newLink.id}`], 0);
-    $('#lk_count').text(`${links.length} guardado${links.length !== 1 ? 's' : ''}`);
+    const $card = $(tplCard(n)).css('opacity', 0);
+    $('#lk_grid').prepend($card);
+    showi([`#lk_${n.id}`], 0);
+    resumen();
     
     Notificacion('Enlace guardado', 'success');
+    if (wiAuth.logged) guardarNube(n).then(() => { n.synced = true; ls.set(links); cloudSync(n.id); });
   };
 
+  // ── EVENTOS ─────────────────────────────────────────────
   $(document)
-    // Guardar nuevo link
-    .on(`click${evNamespace}`, '#lk_btn_add', agregarLink)
-    .on(`keydown${evNamespace}`, '#lk_in_url', function(e) {
-      if (e.key === 'Enter') { e.preventDefault(); agregarLink(); }
-    })
+    .on('click', '#lk_btn_add', agregarLink)
+    .on('keydown', '#lk_in_url', function(e) { if (e.key === 'Enter') { e.preventDefault(); agregarLink(); } })
+    .on('click', '#lk_btn_refresh', () => syncNube(true))
     
-    // Cambiar título (Edición in-place)
-    .on(`change${evNamespace}`, '.lk_tit', function() {
+    // Edición de título In-place
+    .on('change', '.lk_tit', function() {
       const id = $(this).closest('.lk_card').data('id');
-      const l = links.find(x => x.id === id);
-      if(l) { 
-        l.titulo = $(this).val(); 
-        
-        // Actualizar la letra inicial del icono
-        const init = l.titulo ? l.titulo.charAt(0).toUpperCase() : 'L';
-        $(this).closest('.lk_card').find('.lk_icon').text(init);
-        
-        guardarLocal(links); 
-        sincronizarNube();
-      }
+      const l  = findLink(id); if (!l) return;
+      l.titulo = $(this).val();
+      const init = l.titulo ? l.titulo.charAt(0).toUpperCase() : 'L';
+      $(this).closest('.lk_card').find('.lk_icon').text(init);
+      
+      ls.set(links);
+      if (wiAuth.logged) actualizarNube(l).then(() => cloudSync(id));
     })
     
-    // Eliminar enlace (Animación SlideUp)
-    .on(`click${evNamespace}`, '.lk_btn_act.del', function(e) {
-      e.stopPropagation();
-      if (!confirm('¿Seguro que deseas eliminar este enlace?')) return;
-      
-      const $card = $(this).closest('.lk_card');
-      const id = $card.data('id');
-      links = links.filter(x => x.id !== id);
-      guardarLocal(links);
-      sincronizarNube();
-      
-      $card.css('overflow', 'hidden').slideUp(300, function() { 
-        $(this).remove(); 
-        $('#lk_count').text(`${links.length} guardado${links.length !== 1 ? 's' : ''}`);
-        if(!links.length) renderTodo(); 
-      });
-      Notificacion('Enlace eliminado', 'success');
-    })
-    
-    // Copiar URL al portapapeles
-    .on(`click${evNamespace}`, '.lk_btn_act.copy', function(e) {
-      e.stopPropagation(); // Evitar que el clic llegue a la tarjeta
-      const id = $(this).closest('.lk_card').data('id');
-      const l = links.find(x => x.id === id);
-      if(l) {
-        wicopy(l.url, this, 'URL copiada');
-      }
-    })
-    
-    // Abrir enlace haciendo clic en cualquier parte de la tarjeta
-    .on(`click${evNamespace}`, '.lk_card', function(e) {
-      // Excluir clics en inputs, botones o links directos
-      if ($(e.target).closest('input, button, a').length) return;
-      
+    // Pin / Despin
+    .on('click', '.lk_act_pin', function() {
       const id = $(this).data('id');
-      const l = links.find(x => x.id === id);
-      if(l) {
-        window.open(l.url, '_blank', 'noopener,noreferrer');
-      }
-    });
+      const l  = findLink(id); if (!l) return;
+      l.pin = !l.pin;
+      ls.set(links); render$();
+      Notificacion(l.pin ? 'Enlace fijado ✓' : 'Desanclado', 'success');
+      if (wiAuth.logged) actualizarNube(l).then(() => cloudSync(id));
+    })
     
-  setTimeout(() => $('#lk_in_url').focus(), 100);
+    // Eliminar
+    .on('click', '.lk_act_del', function() {
+      const id = $(this).data('id');
+      if (!confirm('¿Seguro que deseas eliminar este enlace?')) return;
+      links = links.filter(l => l.id !== id);
+      ls.set(links);
+      $(`#lk_${id}`).css('overflow', 'hidden').slideUp(280, function() { $(this).remove(); if (!links.length) render$(); });
+      resumen();
+      Notificacion('Enlace eliminado', 'success');
+      if (wiAuth.logged) eliminarNube(id);
+    })
+    
+    // Copiar
+    .on('click', '.lk_act_copy', function() {
+      const l = findLink($(this).data('id'));
+      if (l) wicopy(l.contenido || l.url, this, '¡URL copiada!');
+    });
+
+  showi(['.lk_hero_left', '.lk_add_box'], 50);
+  setTimeout(() => $('#lk_in_url').focus(), 150);
+
+  // Cache-first
+  if (links.length) {
+    render$();
+    if (wiAuth.logged && !cacheOk()) syncNube(false);
+  } else if (wiAuth.logged) {
+    await syncNube(true);
+  } else {
+    render$();
+  }
+
+  console.log(`✅ ${app} ${version} · Links OK`);
 };
 
-export const cleanup = () => {
-  $(document).off('.lk');
-};
+export const cleanup = () => $(document).off('click keydown change', '#lk_btn_add, #lk_in_url, #lk_btn_refresh, .lk_tit, .lk_act_pin, .lk_act_del, .lk_act_copy');

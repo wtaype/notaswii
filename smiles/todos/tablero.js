@@ -1,31 +1,98 @@
 import './tablero.css';
 import $ from 'jquery';
-import { app } from '../wii.js';
-import { showi, Notificacion, wiAuth } from '../widev.js';
+import { app, version } from '../wii.js';
+import { showi, Notificacion, wiAuth, wiTip, getls, savels, Saludar, wiFade } from '../widev.js';
 
-// ════════════════════════════════════════════════════════════
-// 🎨 TABLERO: Masonry Visual Board (Tipo Google Keep/Pinterest)
-// ════════════════════════════════════════════════════════════
-
+// ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY = 'tablero_items';
-const cargarLocal = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } };
-const guardarLocal = (ns) => localStorage.setItem(LS_KEY, JSON.stringify(ns));
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const uid    = () => 'tb' + Date.now();
+const ls     = {
+  get: ()  => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } },
+  set: (d) => localStorage.setItem(LS_KEY, JSON.stringify(d))
+};
+const cacheOk  = ()  => !!getls('tb_sync');
+const marcarOk = ()  => savels('tb_sync', 1, 168);
+
+// Default pastel palette for dots
+const PALETTE = [
+  { c: '', hex: '' }, // Default white/dark
+  { c: 'var(--Cielo)', hex: '#87CEEB' },
+  { c: 'var(--Dulce)', hex: '#FFB6C1' },
+  { c: 'var(--Paz)', hex: '#98FB98' },
+  { c: 'var(--Oro)', hex: '#FFD700' },
+  { c: 'var(--Mora)', hex: '#DDA0DD' }
+];
+
+// ── FIRESTORE ────────────────────────────────────────────────
+const getFS = async () => {
+  const { db } = await import('../firebase.js');
+  return { db, ...await import('firebase/firestore') };
+};
+
+const guardarNube = async (d) => {
+  const wi = wiAuth.user; if (!wi?.usuario) return;
+  try {
+    const { db, doc, setDoc, serverTimestamp } = await getFS();
+    await setDoc(doc(db, 'tableroNotas', d.id), {
+      id: d.id, usuario: wi.usuario, email: wi.email,
+      titulo: String(d.titulo || ''), contenido: String(d.contenido || ''),
+      color: String(d.color || ''), pin: !!d.pin, 
+      creado: serverTimestamp(), actualizado: serverTimestamp()
+    });
+  } catch(e) { console.error('[tablero] guardarNube:', e); }
+};
+
+const actualizarNube = async (d) => {
+  const wi = wiAuth.user; if (!wi?.usuario) return;
+  try {
+    const { db, doc, updateDoc, serverTimestamp } = await getFS();
+    await updateDoc(doc(db, 'tableroNotas', d.id), {
+      titulo: String(d.titulo || ''), contenido: String(d.contenido || ''),
+      color: String(d.color || ''), pin: !!d.pin, actualizado: serverTimestamp()
+    });
+  } catch(e) { console.error('[tablero] actualizarNube:', e); }
+};
+
+const eliminarNube = async (id) => {
+  const wi = wiAuth.user; if (!wi?.usuario) return;
+  try { const { db, doc, deleteDoc } = await getFS(); await deleteDoc(doc(db, 'tableroNotas', id)); } catch {}
+};
+
+const cargarNube = async () => {
+  const wi = wiAuth.user; if (!wi?.email) return null;
+  try {
+    const { db, collection, getDocs, query, where } = await getFS();
+    const snap = await getDocs(query(collection(db, 'tableroNotas'), where('email', '==', wi.email)));
+    return snap.docs.map(d => {
+      const x = d.data();
+      return {
+        id: d.id, titulo: x.titulo || '', contenido: x.contenido || '',
+        color: x.color || '', pin: !!x.pin, 
+        creado: x.creado?.toMillis?.() || Date.now(), synced: true
+      };
+    });
+  } catch { return null; }
+};
 
 // ── RENDER PRINCIPAL ──────────────────────────────────────────
-export const render = () => `
+export const render = () => {
+  const saludo = wiAuth.user ? `${Saludar()}${wiAuth.user.nombre || wiAuth.user.usuario}` : 'Tu Tablero Visual';
+  return `
 <div class="tb_wrap">
   <div class="tb_hero">
     <div class="tb_hero_left">
-      <h1><i class="fas fa-th-large"></i> Tablero Visual</h1>
+      <h1><i class="fas fa-th-large"></i> ${saludo}</h1>
       <p id="tb_count">0 ideas guardadas</p>
     </div>
     <div class="tb_hero_right">
+      <button class="tb_btn_refresh" id="tb_btn_refresh" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
       <button class="tb_btn_new" id="tb_btn_add"><i class="fas fa-plus"></i> Nueva Nota</button>
     </div>
   </div>
 
-  <div id="tb_grid" class="tb_masonry"></div>
+  <div id="tb_grid" class="tb_masonry">
+    <div class="tb_skeleton"></div><div class="tb_skeleton"></div><div class="tb_skeleton"></div>
+  </div>
 
   <!-- MODAL EDITOR -->
   <div id="tb_modal_wrap" class="tb_modal_overlay">
@@ -35,221 +102,218 @@ export const render = () => `
       
       <div class="tb_modal_foot">
         <div class="tb_theme_picker">
-          <div class="tb_theme_dot active" data-t="0" title="Blanco (Predeterminado)"></div>
-          <div class="tb_theme_dot" data-t="1" title="Cielo"></div>
-          <div class="tb_theme_dot" data-t="2" title="Dulce"></div>
-          <div class="tb_theme_dot" data-t="3" title="Paz"></div>
-          <div class="tb_theme_dot" data-t="4" title="Oro"></div>
-          <div class="tb_theme_dot" data-t="5" title="Mora"></div>
+          <div class="tb_theme_dot active" data-hex="" title="Predeterminado" style="background:var(--bg); border: 1px solid var(--brd);"></div>
+          <div class="tb_theme_dot" data-hex="#87CEEB" title="Cielo" style="background:var(--Cielo);"></div>
+          <div class="tb_theme_dot" data-hex="#FFB6C1" title="Dulce" style="background:var(--Dulce);"></div>
+          <div class="tb_theme_dot" data-hex="#98FB98" title="Paz" style="background:var(--Paz);"></div>
+          <div class="tb_theme_dot" data-hex="#FFD700" title="Oro" style="background:var(--Oro);"></div>
+          <div class="tb_theme_dot" data-hex="#DDA0DD" title="Mora" style="background:var(--Mora);"></div>
+          <input type="color" id="tb_in_color" class="tb_theme_custom" ${wiTip('Color personalizado', undefined, 'top')} value="#cccccc">
         </div>
-        <div>
-           <button class="tb_btn_save" id="tb_btn_close" style="background:var(--bg); color:var(--tx2); margin-right:1vh;">Cancelar</button>
+        <div style="display:flex; gap:1vh; align-items:center;">
+           <button class="tb_btn_save" id="tb_btn_close" style="background:var(--bg); color:var(--tx2);">Cancelar</button>
            <button class="tb_btn_save" id="tb_btn_save_item">Guardar</button>
         </div>
       </div>
     </div>
   </div>
-</div>
-`;
+</div>`;
+};
 
 // ── LÓGICA DE ESTADO ──────────────────────────────────────────
-let items = [];
-let editingId = null;
-let currentTheme = 0;
+export const init = async () => {
+  let items = ls.get();
+  let editingId = null;
+  let currentColor = ''; // color actual del modal en hexadecimal
 
-const tplCard = (d) => `
-  <article class="tb_card theme-${d.theme || 0}" id="tb_${d.id}" data-id="${d.id}">
-    ${d.titulo ? `<h3 class="tb_card_title">${d.titulo}</h3>` : ''}
-    ${d.contenido ? `<p class="tb_card_content">${d.contenido}</p>` : ''}
-    
-    <div class="tb_card_actions">
-      <button class="tb_btn_act edit" title="Editar"><i class="fas fa-pen"></i></button>
-      <button class="tb_btn_act del" title="Eliminar"><i class="fas fa-trash-can"></i></button>
-    </div>
-  </article>
-`;
+  const skeleton = () => $('#tb_grid').html('<div class="tb_skeleton"></div>'.repeat(3));
+  const cloudSync = (id) => $(`[data-id="${id}"] .tb_act_cloud`)
+    .removeClass('fa-cloud-arrow-up tb_cloud_pen').addClass('fa-cloud tb_cloud_ok')
+    .attr('data-witip', 'En nube');
 
-const renderTodo = () => {
-  $('#tb_count').text(`${items.length} idea${items.length !== 1 ? 's' : ''} guardada${items.length !== 1 ? 's' : ''}`);
-  
-  if (!items.length) {
-    $('#tb_grid').html(`
-      <div style="grid-column: 1 / -1; text-align:center; padding: 10vh 2vw; color:var(--tx3);">
-        <i class="fas fa-magic" style="font-size:3rem; margin-bottom:2vh; opacity:0.5; color:var(--tx2);"></i>
-        <h2 style="color:var(--tx);">Tu tablero está vacío</h2>
-        <p>Añade tu primera nota visual colorida para comenzar a organizar tus ideas.</p>
-      </div>
-    `);
-  } else {
-    $('#tb_grid').html(items.map(tplCard).join(''));
-  }
-};
+  const resumen = () => $('#tb_count').text(`${items.length} idea${items.length !== 1 ? 's' : ''} guardada${items.length !== 1 ? 's' : ''}`);
 
-const sincronizarNube = async () => {
-  if (!wiAuth.logged) return;
-  try {
-    const { db } = await import('../firebase.js');
-    const { doc, setDoc } = await import('firebase/firestore');
-    // Para entornos reales con muchos datos, se actualizarían solo los modificados.
-    // Aquí hacemos batch de los recientes.
-    const ops = items.slice(0, 10).map(l => setDoc(doc(db, 'usuarios', wiAuth.user.usuario, 'tablero', l.id), l));
-    await Promise.all(ops);
-  } catch (e) {}
-};
+  const sorted = () => [...items].sort((a,b) => {
+    if (a.pin && !b.pin) return -1;
+    if (!a.pin && b.pin) return 1;
+    return (b.creado||0) - (a.creado||0);
+  });
 
-// Autoajustar altura del textarea en el modal
-const autoResize = (el) => {
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-};
-
-const abrirModal = (id = null) => {
-  editingId = id;
-  const $m = $('#tb_modal_box');
-  
-  // Limpiar clases de temas anteriores
-  $m.removeClass('theme-0 theme-1 theme-2 theme-3 theme-4 theme-5');
-  
-  if (id) {
-    const it = items.find(x => x.id === id);
-    if(it) {
-      $('#tb_in_tit').val(it.titulo);
-      $('#tb_in_cnt').val(it.contenido);
-      currentTheme = it.theme || 0;
-    }
-  } else {
-    $('#tb_in_tit').val('');
-    $('#tb_in_cnt').val('');
-    currentTheme = 0;
-  }
-  
-  // Aplicar tema
-  $m.addClass(`theme-${currentTheme}`);
-  $('.tb_theme_dot').removeClass('active');
-  $(`.tb_theme_dot[data-t="${currentTheme}"]`).addClass('active');
-  
-  $('#tb_modal_wrap').addClass('active');
-  
-  setTimeout(() => {
-    autoResize(document.getElementById('tb_in_cnt'));
-    $('#tb_in_cnt').focus();
-  }, 100);
-};
-
-const cerrarModal = () => {
-  $('#tb_modal_wrap').removeClass('active');
-  editingId = null;
-};
-
-// ── EVENTOS Y CICLO DE VIDA ────────────────────────────────────
-export const init = () => {
-  items = cargarLocal().sort((a,b) => b.creado - a.creado);
-  renderTodo();
-  
-  // Animación inicial masonry
-  showi(['.tb_hero_left', '.tb_btn_new', '.tb_card'], 60);
-
-  const evNamespace = '.tb';
-  $(document).off(evNamespace); // Limpiar
-
-  $(document)
-    // Modal Actions
-    .on(`click${evNamespace}`, '#tb_btn_add', () => abrirModal())
-    .on(`click${evNamespace}`, '#tb_btn_close', cerrarModal)
-    .on(`click${evNamespace}`, '#tb_modal_wrap', function(e) {
-      // Cerrar si se clickea fuera del modal (overlay)
-      if (e.target === this) cerrarModal();
-    })
-    
-    // AutoResize Textarea
-    .on(`input${evNamespace}`, '#tb_in_cnt', function() { autoResize(this); })
-    
-    // Selección de Tema en Modal
-    .on(`click${evNamespace}`, '.tb_theme_dot', function() {
-      const t = $(this).data('t');
-      currentTheme = t;
-      $('.tb_theme_dot').removeClass('active');
-      $(this).addClass('active');
+  const tplCard = (d) => `
+    <article class="tb_card${!d.color ? ' default-color' : ''}${d.pin ? ' tb_pinned' : ''}" id="tb_${d.id}" data-id="${d.id}" ${d.color ? `style="--card-color: ${d.color};"` : ''}>
+      ${d.titulo ? `<h3 class="tb_card_title">${d.titulo}</h3>` : ''}
+      ${d.contenido ? `<p class="tb_card_content">${d.contenido}</p>` : ''}
       
-      const $m = $('#tb_modal_box');
-      $m.removeClass('theme-0 theme-1 theme-2 theme-3 theme-4 theme-5').addClass(`theme-${t}`);
-    })
+      <div class="tb_card_acts">
+        <button class="tb_btn_act tb_act_pin${d.pin ? ' active' : ''}" data-id="${d.id}" ${wiTip(d.pin ? 'Quitar pin' : 'Fijar', undefined, 'top')}><i class="fas fa-thumbtack"></i></button>
+        <button class="tb_btn_act edit" title="Editar"><i class="fas fa-pen"></i></button>
+        <button class="tb_btn_act del" ${wiTip('Eliminar', undefined, 'top')}><i class="fas fa-trash-can"></i></button>
+        <i class="tb_btn_act tb_act_cloud fas ${d.synced ? 'fa-cloud tb_cloud_ok' : 'fa-cloud-arrow-up tb_cloud_pen'}" ${wiTip(d.synced ? 'En nube' : 'Local', undefined, 'top')}></i>
+      </div>
+    </article>
+  `;
+
+  const render$ = async () => {
+    const lista = sorted();
+    await wiFade('#tb_grid', lista.length 
+      ? lista.map(tplCard).join('') 
+      : `<div class="tb_empty"><i class="fas fa-magic"></i><h2>Tu tablero está vacío</h2><p>Añade tu primera nota visual colorida para comenzar a organizar tus ideas.</p></div>`, 
+    80);
+    if (lista.length) showi(['.tb_grid > *'], 60);
+    resumen();
+  };
+
+  const syncNube = async (useSkeleton = false) => {
+    if (!wiAuth.logged) return;
+    if (useSkeleton) skeleton();
+    const $ico = $('#tb_btn_refresh i').addClass('tb_spin');
+    try {
+      const remotos = await cargarNube();
+      if (remotos?.length) {
+        const idsRem  = new Set(remotos.map(x => x.id));
+        const locales = items.filter(x => !idsRem.has(x.id));
+        locales.forEach(x => guardarNube(x));
+        items = [...remotos, ...locales];
+        ls.set(items);
+        marcarOk();
+      }
+    } finally { $ico.removeClass('tb_spin'); render$(); }
+  };
+
+  // ── MODAL ──
+  const applyModalColor = (hex) => {
+    currentColor = hex;
+    const $m = $('#tb_modal_box');
+    $('.tb_theme_dot').removeClass('active');
     
-    // Guardar Nota (Crear / Actualizar)
-    .on(`click${evNamespace}`, '#tb_btn_save_item', () => {
+    if (!hex) {
+      $m.addClass('default-color').removeAttr('style');
+      $('.tb_theme_dot[data-hex=""]').addClass('active');
+      $('#tb_in_color').val('#cccccc');
+    } else {
+      $m.removeClass('default-color').attr('style', `--card-color: ${hex};`);
+      const $dot = $(`.tb_theme_dot[data-hex="${hex.toUpperCase()}"]`);
+      if ($dot.length) {
+        $dot.addClass('active');
+        $('#tb_in_color').val(hex);
+      } else {
+        $('#tb_in_color').val(hex); // Personalizado
+      }
+    }
+  };
+
+  const abrirModal = (id = null) => {
+    editingId = id;
+    if (id) {
+      const it = items.find(x => x.id === id);
+      if(it) {
+        $('#tb_in_tit').val(it.titulo);
+        $('#tb_in_cnt').val(it.contenido);
+        applyModalColor(it.color || '');
+      }
+    } else {
+      $('#tb_in_tit').val('');
+      $('#tb_in_cnt').val('');
+      applyModalColor('');
+    }
+    
+    $('#tb_modal_wrap').addClass('active');
+    setTimeout(() => $('#tb_in_cnt').focus(), 100);
+  };
+
+  const cerrarModal = () => { $('#tb_modal_wrap').removeClass('active'); editingId = null; };
+
+  // ── EVENTOS ─────────────────────────────────────────────
+  $(document)
+    .on('click', '#tb_btn_add', () => abrirModal())
+    .on('click', '#tb_btn_close', cerrarModal)
+    .on('click', '#tb_modal_wrap', function(e) { if (e.target === this) cerrarModal(); })
+    .on('click', '#tb_btn_refresh', () => syncNube(true))
+    
+    // Paleta de colores
+    .on('click', '.tb_theme_dot', function() { applyModalColor($(this).data('hex')); })
+    .on('input', '#tb_in_color', function() { applyModalColor($(this).val()); })
+    
+    // Guardar
+    .on('click', '#tb_btn_save_item', () => {
       const tit = $('#tb_in_tit').val().trim();
       const cnt = $('#tb_in_cnt').val().trim();
       
       if (!tit && !cnt) { Notificacion('La nota está vacía', 'warning'); return; }
       
       if (editingId) {
-        // Actualizar existente
         const it = items.find(x => x.id === editingId);
         if (it) {
-          it.titulo = tit;
-          it.contenido = cnt;
-          it.theme = currentTheme;
-          it.creado = Date.now(); // Mover al principio
+          it.titulo = tit; it.contenido = cnt; it.color = currentColor;
+          it.creado = Date.now(); // bump to top
+          it.synced = false;
         }
-        // Reordenar
         items = items.filter(x => x.id !== editingId);
-        items.unshift(items.find(x => x.id === editingId) || { id: editingId, titulo: tit, contenido: cnt, theme: currentTheme, creado: Date.now() });
+        items.unshift(it);
+        ls.set(items);
         Notificacion('Nota actualizada', 'success');
+        if (wiAuth.logged) actualizarNube(it).then(() => { it.synced = true; ls.set(items); cloudSync(it.id); });
       } else {
-        // Nueva
-        const ni = { id: uid(), titulo: tit, contenido: cnt, theme: currentTheme, creado: Date.now() };
+        const ni = { id: uid(), titulo: tit, contenido: cnt, color: currentColor, pin: false, creado: Date.now(), synced: false };
         items.unshift(ni);
+        ls.set(items);
         Notificacion('Nota creada', 'success');
+        if (wiAuth.logged) guardarNube(ni).then(() => { ni.synced = true; ls.set(items); cloudSync(ni.id); });
       }
       
-      guardarLocal(items);
-      sincronizarNube();
-      renderTodo();
+      render$();
       cerrarModal();
-      
-      // Animar solo la editada/creada si no recargamos todo el grid.
-      // Aquí estamos llamando renderTodo() para el masonry completo,
-      // podríamos optimizar animando solo la primera tarjeta que siempre será la recién creada/modificada.
-      showi(['.tb_card:first-child'], 0);
+      showi(['.tb_card:first-child'], 0); // re-animar la primera tarjeta
     })
     
-    // Interacciones de Tarjeta
-    .on(`click${evNamespace}`, '.tb_card', function(e) {
-      // Prevenir si se clickean los botones de accion
-      if ($(e.target).closest('.tb_btn_act').length) return;
-      abrirModal($(this).data('id'));
+    // Pin / Despin
+    .on('click', '.tb_act_pin', function(e) {
+      e.stopPropagation();
+      const id = $(this).data('id');
+      const l = items.find(x => x.id === id); if (!l) return;
+      l.pin = !l.pin;
+      ls.set(items); render$();
+      Notificacion(l.pin ? 'Nota fijada ✓' : 'Desanclada', 'success');
+      if (wiAuth.logged) actualizarNube(l).then(() => cloudSync(id));
     })
     
     // Editar
-    .on(`click${evNamespace}`, '.tb_btn_act.edit', function(e) {
+    .on('click', '.tb_btn_act.edit, .tb_card', function(e) {
+      if ($(e.target).closest('.tb_btn_act').length && !$(this).hasClass('edit')) return;
       e.stopPropagation();
-      const id = $(this).closest('.tb_card').data('id');
-      abrirModal(id);
+      abrirModal($(this).closest('.tb_card').data('id'));
     })
     
     // Eliminar
-    .on(`click${evNamespace}`, '.tb_btn_act.del', function(e) {
+    .on('click', '.tb_btn_act.del', function(e) {
       e.stopPropagation();
       if (!confirm('¿Eliminar esta nota del tablero?')) return;
-      
       const $card = $(this).closest('.tb_card');
       const id = $card.data('id');
       
       items = items.filter(x => x.id !== id);
-      guardarLocal(items);
-      sincronizarNube();
-      
+      ls.set(items);
       $card.css({ transform: 'scale(0.8)', opacity: 0 });
-      setTimeout(() => {
-        $card.remove();
-        $('#tb_count').text(`${items.length} idea${items.length !== 1 ? 's' : ''} guardada${items.length !== 1 ? 's' : ''}`);
-        if(!items.length) renderTodo();
-      }, 300);
-      
+      setTimeout(() => { $card.remove(); resumen(); if(!items.length) render$(); }, 300);
       Notificacion('Nota eliminada', 'success');
+      if (wiAuth.logged) eliminarNube(id);
     });
+
+  showi(['.tb_hero_left', '.tb_btn_new'], 50);
+
+  // Cache-first
+  if (items.length) {
+    render$();
+    if (wiAuth.logged && !cacheOk()) syncNube(false);
+  } else if (wiAuth.logged) {
+    await syncNube(true);
+  } else {
+    render$();
+  }
+
+  console.log(`✅ ${app} ${version} · Tablero OK`);
 };
 
 export const cleanup = () => {
-  $(document).off('.tb');
+  $(document).off('click input', '#tb_btn_add, #tb_btn_close, #tb_modal_wrap, #tb_btn_refresh, .tb_theme_dot, #tb_in_color, #tb_btn_save_item, .tb_act_pin, .tb_btn_act.edit, .tb_card, .tb_btn_act.del');
 };
