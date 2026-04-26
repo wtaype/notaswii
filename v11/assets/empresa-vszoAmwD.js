@@ -1,0 +1,96 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/inicio-CaA29QNn.css"])))=>i.map(i=>d[i]);
+import{t as e}from"./vendor-BDh6mtVu.js";import{a as t,f as n,l as r,p as i,r as a,s as o,t as s,u as c}from"./widev-B--4oPfx.js";import"./wii-By3LwGGz.js";import{t as l}from"./preload-helper-DezNxDVI.js";import{E as u,_ as d,b as f,v as p,w as m,x as h}from"./firebase-CCUuWaKQ.js";import{n as g}from"./firebase-DG8WAU6u.js";var _=()=>n(`wiSmile`),v=`epTotalEmpleados`,y=`epTotalEquipos`,b=`epMetricas`,x=`epFeed`,S=async()=>{let e=_();if(!e)return`<div class="epd_page"><div class="epd_empty"><i class="fas fa-lock"></i><p>Sin sesión activa.</p></div></div>`;let i=a(e.nombres||e.nombre||`Administrador`),c=o(e.nombres||e.nombre||``),l=e.foto||null,u=s(e.empresa||`NotasWii`),d=n(v)??`—`,f=n(y)??`—`,p=n(b)||{wpm:`—`,cert:`—`};return`
+  <div class="epd_page">
+
+    <!-- HERO PRO -->
+    <div class="epd_hero">
+      <div class="epd_hero_left">
+        <div class="epd_avatar_wrap">
+          <div class="epd_avatar_glow"></div>
+          <div class="epd_avatar">
+            ${l?`<img src="${l}" alt="${i}" onerror="this.parentElement.innerHTML='${c}'">`:c}
+          </div>
+        </div>
+        <div class="epd_hero_txt">
+          <p class="epd_saludo">${t()}</p>
+          <h1 class="epd_nombre">${i.split(` `)[0]}</h1>
+          <div class="epd_tags">
+            <span class="epd_tag"><i class="fas fa-crown"></i> Admin. Corporativo</span>
+            <span class="epd_tag"><i class="fas fa-building"></i> ${u}</span>
+          </div>
+        </div>
+      </div>
+      <div class="epd_hero_right">
+        <div class="epd_date"><i class="fas fa-calendar-alt"></i> ${r()}</div>
+      </div>
+    </div>
+
+    <!-- KPI GRID -->
+    <div class="epd_kpi_grid">
+      <div class="epd_kpi_card" style="--kc:#38bdf8">
+        <div class="epd_kpi_icon"><i class="fas fa-user-tie"></i></div>
+        <div class="epd_kpi_val" id="epd_k_emp">${d}</div>
+        <div class="epd_kpi_lbl">Colaboradores Totales</div>
+      </div>
+      <div class="epd_kpi_card" style="--kc:#8b5cf6">
+        <div class="epd_kpi_icon"><i class="fas fa-sitemap"></i></div>
+        <div class="epd_kpi_val" id="epd_k_eqp">${f}</div>
+        <div class="epd_kpi_lbl">Departamentos Activos</div>
+      </div>
+      <div class="epd_kpi_card" style="--kc:#f59e0b">
+        <div class="epd_kpi_icon"><i class="fas fa-bolt"></i></div>
+        <div class="epd_kpi_val" id="epd_k_wpm">${p.wpm}</div>
+        <div class="epd_kpi_lbl">WPM Corporativo</div>
+      </div>
+      <div class="epd_kpi_card" style="--kc:#10b981">
+        <div class="epd_kpi_icon"><i class="fas fa-award"></i></div>
+        <div class="epd_kpi_val" id="epd_k_cert">${p.cert}</div>
+        <div class="epd_kpi_lbl">Personal Certificado</div>
+      </div>
+    </div>
+
+    <!-- ACCESOS GRID -->
+    <h2 class="epd_sec_title"><i class="fas fa-layer-group"></i> Módulos Corporativos</h2>
+    <div class="epd_acc_grid">
+      ${[{page:`empleados`,ico:`fa-id-badge`,color:`#38bdf8`,tit:`Colaboradores`,sub:`Gestión de nómina`},{page:`equipos`,ico:`fa-users-gear`,color:`#8b5cf6`,tit:`Departamentos`,sub:`Organización de áreas`},{page:`reportes`,ico:`fa-chart-pie`,color:`#f59e0b`,tit:`Analítica`,sub:`Métricas y estadísticas`},{page:`certificados`,ico:`fa-certificate`,color:`#10b981`,tit:`Certificados`,sub:`Diplomas oficiales`},{page:`mensajes`,ico:`fa-envelope-open-text`,color:`#ec4899`,tit:`Comunicados`,sub:`Avisos internos`},{page:`perfil`,ico:`fa-building-user`,color:`#64748b`,tit:`Perfil`,sub:`Configuración corporativa`}].map(e=>`
+        <a href="/${e.page}" class="epd_acc_card nv_item" data-page="${e.page}" style="--ac:${e.color}">
+          <div class="epd_acc_icon"><i class="fas ${e.ico}"></i></div>
+          <div class="epd_acc_info">
+            <div class="epd_acc_tit">${e.tit}</div>
+            <div class="epd_acc_sub">${e.sub}</div>
+          </div>
+          <i class="fas fa-arrow-right epd_acc_arr"></i>
+        </a>
+      `).join(``)}
+    </div>
+
+    <!-- FEED RECIENTE -->
+    <div class="epd_feed_wrap">
+      <div class="epd_feed_hdr">
+        <h2 class="epd_feed_title"><i class="fas fa-satellite-dish"></i> Actividad Reciente</h2>
+        <button class="epd_feed_btn" id="epd_btn_sync"><i class="fas fa-sync-alt"></i> Actualizar</button>
+      </div>
+      <div id="epd_feed_body">
+        <div class="epd_empty"><i class="fas fa-spinner fa-spin"></i><p>Sincronizando entrenamientos...</p></div>
+      </div>
+    </div>
+
+  </div>`},C=async()=>{let t=_();t&&(e(document).off(`.epd`),await T(t),e(document).on(`click.epd`,`.nv_item`,function(t){t.preventDefault();let n=e(this).data(`page`);n&&l(async()=>{let{rutas:e}=await import(`./rutas-Cg-sGy9c.js`).then(e=>e.r);return{rutas:e}},__vite__mapDeps([0])).then(({rutas:e})=>e.navigate(`/${n}`))}),e(document).on(`click.epd`,`#epd_btn_sync`,async function(){let n=e(this).find(`i`).addClass(`fa-spin`);[v,y,b,x].forEach(e=>localStorage.removeItem(e)),await T(t,!0),setTimeout(()=>n.removeClass(`fa-spin`),500)}))},w=()=>{e(document).off(`.epd`)};async function T(e,t=!1){await Promise.all([E(e,t),D(e,t)])}async function E(t,r){if(!(!r&&n(v)!=null))try{let n=await d(h(u(g,`lecciones`),m(`empresa_id`,`==`,t.usuario)));n.empty&&(n=await d(h(u(g,`lecciones`),m(`gestor_id`,`==`,t.usuario))));let r=n.docs.map(e=>e.data()),a=r.length,o=r.map(e=>e.wpmMax||0),s=a>0?Math.round(o.reduce((e,t)=>e+t,0)/a):0,c=r.filter(e=>(e.completadas?.length||0)>=45&&(e.wpmMax||0)>=80).length,l=await d(h(u(g,`clases`),m(`empresa_id`,`==`,t.usuario)));l.empty&&(l=await d(h(u(g,`clases`),m(`gestor_id`,`==`,t.usuario))));let f=l.size;i(v,a,2),i(y,f,2),i(b,{wpm:s,cert:c},2),e(`#epd_k_emp`).text(a),e(`#epd_k_eqp`).text(f),e(`#epd_k_wpm`).text(s||`—`),e(`#epd_k_cert`).text(c)}catch(e){console.error(`[empresa] KPI Error`,e)}}async function D(e,t){if(!t){let e=n(x);if(e?.length){O(e);return}}try{let t=await d(h(u(g,`lecciones`),m(`empresa_id`,`==`,e.usuario),f(`ultPractica`,`desc`),p(10)));t.empty&&(t=await d(h(u(g,`lecciones`),m(`gestor_id`,`==`,e.usuario),f(`ultPractica`,`desc`),p(10))));let n=t.docs.map(e=>({usuario:e.id,...e.data()}));i(x,n,1/12),O(n)}catch{try{let t=await d(h(u(g,`lecciones`),m(`empresa_id`,`==`,e.usuario),p(10)));t.empty&&(t=await d(h(u(g,`lecciones`),m(`gestor_id`,`==`,e.usuario),p(10)))),O(t.docs.map(e=>({usuario:e.id,...e.data()})))}catch{O([])}}}function O(t){if(!t.length){e(`#epd_feed_body`).html(`
+      <div class="epd_empty">
+        <i class="fas fa-ghost"></i>
+        <p>No hay actividad registrada aún.</p>
+      </div>`);return}let n=t.map(e=>{let t=e.nombre||e.usuario||`—`;return`
+      <div class="epd_feed_item">
+        <div class="epd_fi_av">${o(t)}</div>
+        <div class="epd_fi_main">
+          <div class="epd_fi_head">
+            <span class="epd_fi_nom">${t}</span>
+            <span class="epd_fi_dep"><i class="fas fa-building"></i> ${e.equipo_id||e.clase_id||e.claseId||`General`}</span>
+          </div>
+          <div class="epd_fi_metrics">
+            <div class="epd_fi_met w"><i class="fas fa-bolt"></i> ${e.wpmMax||0} WPM</div>
+            <div class="epd_fi_met p"><i class="fas fa-bullseye"></i> ${e.precision||0}%</div>
+          </div>
+        </div>
+        <div class="epd_fi_time">${e.ultPractica?.toDate?c(e.ultPractica):`Reciente`}</div>
+      </div>`}).join(``);e(`#epd_feed_body`).html(`<div class="epd_feed_list">${n}</div>`)}export{w as cleanup,C as init,S as render};
