@@ -1,10 +1,7 @@
 import $ from 'jquery';
 import { app, icon } from './wii.js';
 import { rutas, NAV } from './rutas.js';
-import { Mensaje, wiAuth, wiVersion } from './widev.js';
-
-// Detector de versiones Premium
-wiVersion();
+import { Mensaje, wiAuth } from './widev.js';
 
 // ── LOGO — generado desde wii.js ─────────────────────────────────────────────
 const LOGO = `<a href="/"><i class="fa-solid ${icon}"></i> ${app}</a>`;
