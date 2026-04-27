@@ -336,5 +336,4 @@ export const init = async () => {
   $('#mn_inp_cuerpo').focus();
   console.log(`📋 ${app} ${version} · MisNotas OK`);
 };
-
 export const cleanup = () => { $(document).off('.mn'); unsub?.(); console.log('🧹 MisNotas OK'); };
