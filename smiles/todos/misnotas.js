@@ -15,7 +15,19 @@ const tipos = {
   link:  { icon: 'fa-link',         label: 'Link',  color: '#FFB800' },
 };
 
-const cargarLocal  = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]').map(n => ({ ...n, link: n.link || n.url || '', pin: n.pin ?? n.fijada ?? false, creado: n.creado || n.fecha || Date.now() })); } catch { return []; } };
+const DEMO = [
+  { id: 'ej1', tipo: 'idea',  titulo: '¡Bienvenido a Mis Notas!', contenido: 'Guarda tus ideas rápidas. Dale clic al icono de la chincheta para fijarlas arriba.', pin: true,  creado: Date.now() },
+  { id: 'ej2', tipo: 'tarea', titulo: 'Sincroniza en la nube',     contenido: 'Crea una cuenta gratuita para guardar todo en la nube y acceder desde cualquier dispositivo.', pin: false, creado: Date.now() - 1000 },
+  { id: 'ej3', tipo: 'link',  titulo: 'Mis Proyectos',             link: 'https://wtaype.web.app/proyectos', pin: false, creado: Date.now() - 2000 },
+];
+
+const cargarLocal  = () => {
+  try {
+    const d = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+    if (!d.length && !wiAuth.user) return [...DEMO];
+    return d.map(n => ({ ...n, link: n.link || n.url || '', pin: n.pin ?? n.fijada ?? false, creado: n.creado || n.fecha || Date.now() }));
+  } catch { return wiAuth.user ? [] : [...DEMO]; }
+};
 const guardarLocal = (ns) => localStorage.setItem(LS_KEY, JSON.stringify(ns));
 const autoTitulo   = (tipo, lista) => `${tipos[tipo]?.label || 'Nota'} ${lista.filter(n => n.tipo === tipo).length + 1}`;
 
@@ -104,6 +116,7 @@ export const render = () => `
       <span class="mn_count" id="mn_count">0 notas</span>
     </div>
     <div class="mn_header_right">
+      <button class="mn_btn_sync" id="mn_btn_sync" style="display:none" data-witip="Sincronizar" data-wtipo="bottom"><i class="fas fa-rotate"></i></button>
       <div class="mn_search_box">
         <i class="fas fa-search mn_search_ico"></i>
         <input type="text" class="mn_search" id="mn_search" placeholder="Buscar…" autocomplete="off" />
@@ -234,6 +247,9 @@ const guardar = async () => {
     return;
   }
 
+  // Elimina notas DEMO cuando el usuario crea su primera nota
+  notas = notas.filter(n => !n.id.startsWith('ej'));
+
   let obj;
   if (modoEdicion) {
     const idx = notas.findIndex(n => n.id === modoEdicion);
@@ -282,19 +298,38 @@ export const init = async () => {
   $('#mn_search').on('input.mn', function() { filtroBusq=$(this).val().trim(); $('#mn_search_clear').toggleClass('dpn',!filtroBusq); renderNotas(); });
   $('#mn_search_clear').on('click.mn', () => { $('#mn_search').val(''); filtroBusq=''; $('#mn_search_clear').addClass('dpn'); renderNotas(); });
 
+  $('#mn_btn_sync').on('click.mn', async function() {
+    const $i = $(this).find('i'); if ($i.hasClass('fa-spin')) return;
+    $i.addClass('fa-spin');
+    const remotas = await cargarNube();
+    if (remotas?.length) {
+      const ids = new Set(remotas.map(n => n.id));
+      const locales = notas.filter(n => !ids.has(n.id) && !n.id.startsWith('ej'));
+      if (locales.length) locales.forEach(n => guardarNube(n));
+      notas = [...remotas, ...locales];
+      guardarLocal(notas); renderNotas();
+      Notificacion('Sincronizado ✓', 'success');
+    }
+    $i.removeClass('fa-spin');
+  });
+
   // Auth: wiAuth v3.0 reacciona de inmediato si hay sesión, y también en login/logout futuro
   unsub = wiAuth.on(async wi => {
+    $('#mn_btn_sync').toggle(!!wi);
     if (wi) {
       $('#mn_auth_banner').stop(true).fadeOut(150, function(){ $(this).remove(); });
+      // Remover notas DEMO temporales antes de fusionar
+      notas = notas.filter(n => !n.id.startsWith('ej'));
       const remotas = await cargarNube();
       if (remotas?.length) {
         const ids = new Set(remotas.map(n => n.id));
         const locales = notas.filter(n => !ids.has(n.id));
-        if (locales.length) locales.forEach(n => guardarNube(n)); // Sube locales
+        if (locales.length) locales.forEach(n => guardarNube(n)); // Sube locales reales (no DEMO)
         notas = [...remotas, ...locales];
-        guardarLocal(notas); renderNotas();
       }
+      guardarLocal(notas); renderNotas();
     } else {
+      localStorage.removeItem(LS_KEY); notas = cargarLocal(); renderNotas();
       if (!$('#mn_auth_banner').length) $('#mn_form').append(`<div class="mn_auth_banner" id="mn_auth_banner" style="display:none"><i class="fas fa-cloud-arrow-up"></i><p>Crea una cuenta para sincronizar</p><button class="mn_btn_login bt_auth login"><i class="fas fa-user-plus"></i> Crear cuenta</button></div>`), $('#mn_auth_banner').fadeIn(250);
     }
   });

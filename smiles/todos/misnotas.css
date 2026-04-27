@@ -59,6 +59,19 @@
 }
 .mn_search_clear:hover { color: var(--error); }
 
+/* ── BOTÓN SYNC ── */
+.mn_btn_sync {
+  width: 4.2vh; height: 4.2vh;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--wb); border: 1.5px solid var(--brd);
+  border-radius: 1vh; font-size: var(--fz_m1); color: var(--mco);
+  cursor: pointer; transition: all var(--tr_f);
+}
+.mn_btn_sync:hover {
+  background: color-mix(in srgb, var(--mco) 12%, var(--bg4));
+  border-color: var(--mco);
+}
+
 /* ── FILTROS (iconos compactos en header) ── */
 .mn_filtros {
   display: flex; gap: .6vh;
