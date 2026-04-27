@@ -16,6 +16,7 @@ function footer(){
         <div class="foo_links">
           <a href="/terminos.html" class="foo_link" target="_blank"><i class="fas fa-file-contract"></i> Términos y condiciones</a>
           <a href="/cookies.html" class="foo_link" target="_blank"><i class="fas fa-cookie-bite"></i> Cookies</a>
+          <a href="/feedback.html" class="foo_link" target="_blank"><i class="fas fa-comment-dots"></i> Feedback</a>
         </div>
       </div>
       <div class="foo_right">
