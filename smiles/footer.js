@@ -20,7 +20,7 @@ function footer(){
         </div>
       </div>
       <div class="foo_right">
-        <span>Creado con <i class="fas fa-heart" style="color:var(--mco);"></i> by <a href="${linkme}" target="_blank"><strong>${by}</strong></a> 2024 - ${ahora.getFullYear()}</span>
+        <span>Creado con <i class="fas fa-heart" style="color:var(--mco);"></i> by <a href="${linkme}" target="_blank"><strong>${by}</strong></a> ${lanzamiento} - ${ahora.getFullYear()}</span>
       </div>
     </div>
   </footer>
