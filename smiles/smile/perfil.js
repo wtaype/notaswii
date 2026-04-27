@@ -27,6 +27,7 @@ export const render = () => {
   const pais      = u.pais      || '';
   const genero    = u.genero    || '';
   const gustos    = u.gustos    || '';
+  const bio       = u.bio       || '';
   const creado    = u.creado ? wiDate(null).get(u.creado, 'local') : 'Desconocido';
 
   const defaultAvatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(nombre + ' ' + apellidos) + '&background=random&color=fff';
@@ -66,23 +67,36 @@ export const render = () => {
         <label>Enlace del Avatar (URL)</label>
         <input id="prf_avatar" value="${avatar}" placeholder="https://tu-foto.com/imagen.jpg">
         
-        <label>Fecha de Nacimiento</label>
-        <input type="date" id="prf_nacimiento" value="${fechaNacimiento}">
+        <div class="prf_form_2col">
+          <div class="prf_form_grp">
+            <label>Fecha de Nacimiento</label>
+            <input type="date" id="prf_nacimiento" value="${fechaNacimiento}">
+          </div>
+          <div class="prf_form_grp">
+            <label>Género</label>
+            <select id="prf_genero">
+              <option value="" disabled ${!genero ? 'selected' : ''}>Selecciona tu género</option>
+              <option value="Masculino" ${genero === 'Masculino' ? 'selected' : ''}>Masculino</option>
+              <option value="Femenino" ${genero === 'Femenino' ? 'selected' : ''}>Femenino</option>
+              <option value="Otro" ${genero === 'Otro' ? 'selected' : ''}>Otro</option>
+              <option value="Prefiero no decirlo" ${genero === 'Prefiero no decirlo' ? 'selected' : ''}>Prefiero no decirlo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="prf_form_2col">
+          <div class="prf_form_grp">
+            <label>País</label>
+            <input id="prf_pais" value="${pais}" placeholder="Ej. Perú, México, España...">
+          </div>
+          <div class="prf_form_grp">
+            <label>Gustos o intereses</label>
+            <input id="prf_gustos" value="${gustos}" placeholder="Ej. Fútbol, leer, viajar...">
+          </div>
+        </div>
         
-        <label>País</label>
-        <input id="prf_pais" value="${pais}" placeholder="Ej. Perú, México, España...">
-        
-        <label>Género</label>
-        <select id="prf_genero">
-          <option value="" disabled ${!genero ? 'selected' : ''}>Selecciona tu género</option>
-          <option value="Masculino" ${genero === 'Masculino' ? 'selected' : ''}>Masculino</option>
-          <option value="Femenino" ${genero === 'Femenino' ? 'selected' : ''}>Femenino</option>
-          <option value="Otro" ${genero === 'Otro' ? 'selected' : ''}>Otro</option>
-          <option value="Prefiero no decirlo" ${genero === 'Prefiero no decirlo' ? 'selected' : ''}>Prefiero no decirlo</option>
-        </select>
-        
-        <label>Gustos, intereses o deportes</label>
-        <textarea id="prf_gustos" rows="3" placeholder="¿Qué te gusta hacer? Ej. Fútbol, leer, viajar...">${gustos}</textarea>
+        <label>Biografía</label>
+        <textarea id="prf_bio" rows="3" placeholder="Cuéntanos un poco sobre ti...">${bio}</textarea>
 
         <button id="prf_guardar" class="prf_btn"><i class="fas fa-save"></i> Guardar cambios</button>
       </div>
@@ -104,29 +118,16 @@ export const render = () => {
             <span class="prf_val em">${email}</span>
           </div>
           <div class="prf_row">
-            <span class="prf_lbl"><i class="fas fa-user"></i> Usuario</span>
-            <span class="prf_val">@${usuario}</span>
-          </div>
-          <div class="prf_row">
-            <span class="prf_lbl"><i class="fas fa-shield-alt"></i> Rol</span>
-            <span class="prf_val prf_rol_val">${rol}</span>
-          </div>
-          <div class="prf_row">
-            <span class="prf_lbl"><i class="fas fa-palette"></i> Tema</span>
-            <span class="prf_val">${tema}</span>
-          </div>
-          <div class="prf_row">
-            <span class="prf_lbl"><i class="fas fa-calendar-alt"></i> Registro</span>
-            <span class="prf_val">${creado}</span>
+            <span class="prf_lbl"><i class="fas fa-crown"></i> Plan</span>
+            <span class="prf_val" style="color:var(--mco); text-transform:uppercase;">${plan}</span>
           </div>
           <div class="prf_row">
             <span class="prf_lbl"><i class="fas fa-signal"></i> Estado</span>
             <span class="prf_val" style="color:var(--success)">${estado}</span>
           </div>
-          <div class="prf_row prf_uid_row">
-            <span class="prf_lbl"><i class="fas fa-fingerprint"></i> UID</span>
-            <span class="prf_uid_val">${uid}</span>
-            <button class="prf_copy" id="prf_copy_uid" ${wiTip('Copiar UID')}><i class="fas fa-copy"></i></button>
+          <div class="prf_row">
+            <span class="prf_lbl"><i class="fas fa-calendar-alt"></i> Registro</span>
+            <span class="prf_val">${creado}</span>
           </div>
         </div>
       </div>
@@ -149,6 +150,7 @@ export const init = () => {
         pais: $('#prf_pais').val().trim(),
         genero: $('#prf_genero').val() || '',
         gustos: $('#prf_gustos').val().trim(),
+        bio: $('#prf_bio').val().trim(),
       };
 
       if (!updates.nombre) return wiTip(document.getElementById('prf_nombre'), 'Ingresa tu nombre', 'error');
@@ -199,9 +201,6 @@ export const init = () => {
       } finally {
         btn.prop('disabled', false).html('<i class="fas fa-key"></i> Actualizar contraseña');
       }
-    })
-    .on('click.prf', '#prf_copy_uid', function () {
-      wicopy(wi().uid || '', this, '¡UID copiado!');
     });
 };
 

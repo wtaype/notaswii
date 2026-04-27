@@ -221,7 +221,7 @@
 
 /* ==================== RESPONSIVE ==================== */
 @media (max-width:768px){
-  .prf_grid{ grid-template-columns: 1fr; }
+  .prf_grid, .prf_form_2col { grid-template-columns: 1fr; }
   .prf_hero{ flex-direction: column; text-align: center; padding: 2.5vh; }
   .prf_username, .prf_rol_chip{ justify-content: center; }
   .prf_lbl { min-width: auto; }
