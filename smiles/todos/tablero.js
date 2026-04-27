@@ -220,12 +220,12 @@ export const init = async () => {
 
   const cerrarModal = () => { $('#tb_modal_wrap').removeClass('active'); editingId = null; };
 
-  // ── EVENTOS ─────────────────────────────────────────────
+  // ── EVENTOS (Namespaced .tablero para evitar duplicados) ──
   $(document)
-    .on('click', '#tb_btn_add', () => abrirModal())
-    .on('click', '#tb_btn_close', cerrarModal)
-    .on('click', '#tb_modal_wrap', function(e) { if (e.target === this) cerrarModal(); })
-    .on('click', '#tb_btn_refresh', async function() {
+    .on('click.tablero', '#tb_btn_add', () => abrirModal())
+    .on('click.tablero', '#tb_btn_close', cerrarModal)
+    .on('click.tablero', '#tb_modal_wrap', function(e) { if (e.target === this) cerrarModal(); })
+    .on('click.tablero', '#tb_btn_refresh', async function() {
       const $i = $(this).find('i'); if ($i.hasClass('tb_spin')) return;
       $i.addClass('tb_spin');
       const remotos = await cargarNube();
@@ -240,11 +240,11 @@ export const init = async () => {
     })
     
     // Paleta de colores
-    .on('click', '.tb_theme_dot', function() { applyModalColor($(this).data('hex')); })
-    .on('input', '#tb_in_color', function() { applyModalColor($(this).val()); })
+    .on('click.tablero', '.tb_theme_dot', function() { applyModalColor($(this).data('hex')); })
+    .on('input.tablero', '#tb_in_color', function() { applyModalColor($(this).val()); })
     
     // Guardar
-    .on('click', '#tb_btn_save_item', () => {
+    .on('click.tablero', '#tb_btn_save_item', () => {
       const tit = $('#tb_in_tit').val().trim();
       const cnt = $('#tb_in_cnt').val().trim();
       
@@ -277,7 +277,7 @@ export const init = async () => {
     })
     
     // Pin / Despin
-    .on('click', '.tb_act_pin', function(e) {
+    .on('click.tablero', '.tb_act_pin', function(e) {
       e.stopPropagation();
       const id = $(this).data('id');
       const l = items.find(x => x.id === id); if (!l) return;
@@ -288,14 +288,14 @@ export const init = async () => {
     })
     
     // Editar
-    .on('click', '.tb_btn_act.edit, .tb_card', function(e) {
+    .on('click.tablero', '.tb_btn_act.edit, .tb_card', function(e) {
       if ($(e.target).closest('.tb_btn_act').length && !$(this).hasClass('edit')) return;
       e.stopPropagation();
       abrirModal($(this).closest('.tb_card').data('id'));
     })
     
     // Eliminar
-    .on('click', '.tb_btn_act.del', function(e) {
+    .on('click.tablero', '.tb_btn_act.del', function(e) {
       e.stopPropagation();
       if (!confirm('¿Eliminar esta nota del tablero?')) return;
       const $card = $(this).closest('.tb_card');
@@ -333,6 +333,6 @@ export const init = async () => {
 };
 
 export const cleanup = () => {
-  $(document).off('click input', '#tb_btn_add, #tb_btn_close, #tb_modal_wrap, #tb_btn_refresh, .tb_theme_dot, #tb_in_color, #tb_btn_save_item, .tb_act_pin, .tb_btn_act.edit, .tb_card, .tb_btn_act.del');
+  $(document).off('.tablero');
   unsub?.();
 };

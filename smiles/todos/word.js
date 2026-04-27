@@ -1,7 +1,7 @@
 import './word.css';
 import $ from 'jquery';
 import { app, version } from '../wii.js';
-import { showi, Notificacion, wiAuth, wiTip, wicopy, getls, savels, Saludar, wiFade } from '../widev.js';
+import { showi, Notificacion, wiAuth, wiTip, wicopy, getls, savels, Saludar, wiFade, wiTiempo, formatearFechaHora } from '../widev.js';
 
 // ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY = 'word_docs';
@@ -80,6 +80,14 @@ export const render = () => `
            <i class="fas fa-highlighter" style="color:var(--tx2); margin-right: 0.5vh; font-size:12px;"></i>
            <input type="color" id="wd_c_bg" value="#ffff00" style="width:2.5vh;height:2.5vh;border:none;background:none;cursor:pointer;padding:0;">
         </div>
+      </div>
+
+      <!-- Metadata Group (Integrated in Ribbon) -->
+      <div class="wd_tool_sep wd_meta_sep_main" style="display:none"></div>
+      <div id="wd_meta" class="wd_tool_group wd_meta_group" style="display:none; padding: 0 1.5vh; gap: 2vh; border: none; background: transparent;">
+        <span class="wd_meta_item" id="wd_meta_rel" ${wiTip('Actividad reciente')}><i class="fas fa-clock"></i> <span>—</span></span>
+        <span class="wd_meta_item" id="wd_meta_cre" ${wiTip('Fecha de creación')}><i class="fas fa-calendar-plus"></i> <span>—</span></span>
+        <span class="wd_meta_item" id="wd_meta_upd" ${wiTip('Última edición')}><i class="fas fa-pen-nib"></i> <span>—</span></span>
       </div>
     </div>
   </header>
@@ -195,6 +203,7 @@ const tplListItem = (d, actId) => {
 
 // ── INIT ─────────────────────────────────────────────────────
 let unsub = null;
+let metaTimer = null;
 
 export const init = async () => {
   let docs = ls.get();
@@ -202,6 +211,23 @@ export const init = async () => {
   let savedRange = null;
 
   if (wiAuth.user) $('#wd_saludo').text(`${Saludar()}${wiAuth.user.nombre || wiAuth.user.usuario}`);
+
+  // ── Gestión de Metadatos Premium ──────────────────────────
+  const updateMeta = (d) => {
+    if (!wiAuth.user || !d) { $('#wd_meta, .wd_meta_sep_main').hide(); return; }
+    $('#wd_meta, .wd_meta_sep_main').css('display', 'flex');
+    $('#wd_meta_rel span').text(wiTiempo(d.actualizado || d.creado));
+    $('#wd_meta_cre span').text(formatearFechaHora(d.creado));
+    $('#wd_meta_upd span').text(formatearFechaHora(d.actualizado));
+  };
+
+  const startMetaTimer = (d) => {
+    clearInterval(metaTimer);
+    if (!wiAuth.user || !d) return;
+    metaTimer = setInterval(() => {
+      $('#wd_meta_rel span').text(wiTiempo(d.actualizado || d.creado));
+    }, 60000); // Actualizar cada minuto
+  };
 
   const skeleton = () => $('#wd_sb_list').html('<div class="wd_skeleton"></div>'.repeat(3));
 
@@ -223,6 +249,8 @@ export const init = async () => {
     $('#wd_in_tit').val(d.titulo || '');
     $('#wd_editor').html(d.contenido || '');
     renderLista();
+    updateMeta(d);
+    startMetaTimer(d);
   };
 
   const crearNuevo = () => {
@@ -320,6 +348,7 @@ export const init = async () => {
         
         op.then(() => {
           act.synced = true;
+          act.actualizado = Date.now();
           ls.set(docs);
           
           // Actualización visual instantánea de la nube
@@ -327,6 +356,8 @@ export const init = async () => {
             .removeClass('fa-cloud-arrow-up wd_cloud_pen')
             .addClass('fa-cloud wd_cloud_ok')
             .attr('data-witip', 'En nube');
+          
+          updateMeta(act);
             
           $btn.removeClass('fa-spinner wd_spin').addClass('fa-save');
           Notificacion('¡Guardado con éxito! ☁️', 'success');
@@ -418,5 +449,6 @@ export const init = async () => {
 
 export const cleanup = () => {
   $(document).off('click input mouseup keyup change keydown', '#wd_btn_menu, #wd_btn_new, #wd_btn_refresh, .wd_doc_item, .wd_btn_del_doc, #wd_btn_save, .wd_act_pin, #wd_editor, #wd_in_tit, .wd_btn_tool, #wd_f_fam, #wd_f_sz, #wd_l_ht, #wd_c_txt, #wd_c_bg');
+  clearInterval(metaTimer);
   unsub?.();
 };

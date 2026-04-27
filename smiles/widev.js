@@ -325,6 +325,21 @@ export const formatearFechaHora = (ts) => {
        + ' ' + d.toLocaleTimeString('es-PE', { hour:'2-digit', minute:'2-digit' });
 };
 
+// Tiempo relativo V10.0 — "Hace 5 min", "Hace 2h", "Hace 3d", etc.
+export const wiTiempo = (ts) => {
+  if (!ts) return '—';
+  const diff = Date.now() - (ts?.seconds ? ts.seconds * 1000 : ts);
+  const s = Math.floor(diff / 1000);
+  if (s < 60)  return 'Hace un momento';
+  const m = Math.floor(s / 60);
+  if (m < 60)  return `Hace ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24)  return `Hace ${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7)   return `Hace ${d}d`;
+  return formatearFechaHora(ts);
+};
+
 // Meses entre una fecha y hoy
 export const calcMeses = (desde) => {
   const h = new Date(), f = new Date(desde);
