@@ -70,16 +70,15 @@ export const wiScroll = (ids, navSel, opts = {}) => {
   return obs;
 };
 
-// AUTH SIGNAL v2.0_________________________________
+// AUTH SIGNAL v3.0_________________________________
 const bus = new Set();
-export const wiAuth = Object.assign((load, render) => bus.add(async () => { await load(true); render(); }), {
-  on(fn)   { bus.add(fn); },
+export const wiAuth = {
+  get user() { return getls('wiSmile'); },
+  on(fn) { bus.add(fn); const u = this.user; if (u) fn(u); return () => bus.delete(fn); },
   emit(wi) { bus.forEach(fn => { try { fn(wi); } catch(e) { console.error('wiAuth:', e); } }); },
   login(wi, h = 144) { savels('wiSmile', wi, h); this.emit(wi); },
-  logout(keep = []) { removels.except(keep); this.emit(null); },
-  get user() { return getls('wiSmile'); },
-  get logged() { return !!this.user?.usuario; }
-});
+  logout(keep = []) { removels.except(['wiTema', ...keep]); this.emit(null); }
+};
 
 // CARGA INTELIGENTE v14_________________________________
 export const wiSmart = (() => {

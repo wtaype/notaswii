@@ -261,22 +261,11 @@ const eliminar = (id) => {
 };
 
 // ── INIT ─────────────────────────────────────────────────────
+let unsub = null;
+
 export const init = async () => {
   notas = cargarLocal();
   renderNotas();
-
-  // Cargar de nube solo UNA VEZ al inicio (plan gratuito: sin tiempo real)
-  if (wiAuth.user) {
-    const remotas = await cargarNube();
-    if (remotas?.length) {
-      const idsRem = new Set(remotas.map(n => n.id));
-      const locales = notas.filter(n => !idsRem.has(n.id));
-      if (locales.length) locales.forEach(n => guardarNube(n));
-      notas = [...remotas, ...locales];
-      guardarLocal(notas);
-      renderNotas();
-    }
-  }
 
   // Eventos
   $(document)
@@ -290,17 +279,28 @@ export const init = async () => {
     .on('input',  '#mn_inp_cuerpo', function() { const n=$(this).val().length; $('#mn_char_count').text(`${n} / 1000`).toggleClass('mn_char_warn', n>900); })
     .on('click',  '.mn_filtro',   function() { $('.mn_filtro').removeClass('active'); $(this).addClass('active'); filtroTipo=$(this).data('tipo'); renderNotas(); });
 
-  $('#mn_search').on('input', function() { filtroBusq=$(this).val().trim(); $('#mn_search_clear').toggleClass('dpn',!filtroBusq); renderNotas(); });
-  $('#mn_search_clear').on('click', () => { $('#mn_search').val(''); filtroBusq=''; $('#mn_search_clear').addClass('dpn'); renderNotas(); });
+  $('#mn_search').on('input.mn', function() { filtroBusq=$(this).val().trim(); $('#mn_search_clear').toggleClass('dpn',!filtroBusq); renderNotas(); });
+  $('#mn_search_clear').on('click.mn', () => { $('#mn_search').val(''); filtroBusq=''; $('#mn_search_clear').addClass('dpn'); renderNotas(); });
 
-  // Auth: solo eliminar/mostrar banner, NO recargar Firestore (evitar lecturas extra)
-  wiAuth.on(wi => {
-    if (wi) $('#mn_auth_banner').stop(true).fadeOut(150, function(){ $(this).remove(); });
-    else if (!$('#mn_auth_banner').length) $('#mn_form').append(`<div class="mn_auth_banner" id="mn_auth_banner" style="display:none"><i class="fas fa-cloud-arrow-up"></i><p>Crea una cuenta para sincronizar</p><button class="mn_btn_login bt_auth login"><i class="fas fa-user-plus"></i> Crear cuenta</button></div>`), $('#mn_auth_banner').fadeIn(250);
+  // Auth: wiAuth v3.0 reacciona de inmediato si hay sesión, y también en login/logout futuro
+  unsub = wiAuth.on(async wi => {
+    if (wi) {
+      $('#mn_auth_banner').stop(true).fadeOut(150, function(){ $(this).remove(); });
+      const remotas = await cargarNube();
+      if (remotas?.length) {
+        const ids = new Set(remotas.map(n => n.id));
+        const locales = notas.filter(n => !ids.has(n.id));
+        if (locales.length) locales.forEach(n => guardarNube(n)); // Sube locales
+        notas = [...remotas, ...locales];
+        guardarLocal(notas); renderNotas();
+      }
+    } else {
+      if (!$('#mn_auth_banner').length) $('#mn_form').append(`<div class="mn_auth_banner" id="mn_auth_banner" style="display:none"><i class="fas fa-cloud-arrow-up"></i><p>Crea una cuenta para sincronizar</p><button class="mn_btn_login bt_auth login"><i class="fas fa-user-plus"></i> Crear cuenta</button></div>`), $('#mn_auth_banner').fadeIn(250);
+    }
   });
 
   $('#mn_inp_cuerpo').focus();
   console.log(`📋 ${app} ${version} · MisNotas OK`);
 };
 
-export const cleanup = () => { $(document).off('.mn'); console.log('🧹 MisNotas OK'); };
+export const cleanup = () => { $(document).off('.mn'); unsub?.(); console.log('🧹 MisNotas OK'); };
