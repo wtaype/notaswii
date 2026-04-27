@@ -739,7 +739,10 @@
       text-decoration: none;
       transition: color 0.2s;
     }
-    .foo_link:hover { color: var(--mco); }
+
+    .foo_link:hover {
+      color: var(--mco);
+    }
 
     .foo_right {
       display: flex;
@@ -756,17 +759,38 @@
       text-decoration: none;
       transition: color 0.2s;
     }
+
     .foo_right a:hover {
       color: var(--mco);
     }
 
     @media (max-width: 1400px) {
-      .foo_inner { max-width: 85vw; }
+      .foo_inner {
+        max-width: 85vw;
+      }
     }
+
     @media (max-width: 900px) {
-      .foo_inner { max-width: 90vw; flex-direction: column; justify-content: center; text-align: center; gap: 2vh; }
-      .foo_left, .foo_right { justify-content: center; flex-direction: column; gap: 1.5vh; }
-      .foo_links { padding-left: 0; border-left: none; justify-content: center; }
+      .foo_inner {
+        max-width: 90vw;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        gap: 2vh;
+      }
+
+      .foo_left,
+      .foo_right {
+        justify-content: center;
+        flex-direction: column;
+        gap: 1.5vh;
+      }
+
+      .foo_links {
+        padding-left: 0;
+        border-left: none;
+        justify-content: center;
+      }
     }
 
     /* ==================== UTILIDADES EXTRA ==================== */
