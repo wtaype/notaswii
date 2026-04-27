@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="Paz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Política de Cookies - NotasWii</title>
+  <link rel="icon" href="/smile.png">
+  <meta name="theme-color" content="#29C72E">
+  <meta name="description" content="Política de Cookies de NotasWii - Transparencia sobre cómo utilizamos los datos para mejorar tu experiencia de productividad.">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --mco: #29C72E;
+      --bg: #f0f7f0;
+      --wb: #ffffff;
+      --tx: #1a1a1a;
+      --tx2: #4a4a4a;
+      --tx3: #7a7a7a;
+      --brd: rgba(0,0,0,0.08);
+      --ff: 'Outfit', sans-serif;
+      --tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: var(--ff); 
+      background: var(--bg); 
+      color: var(--tx); 
+      line-height: 1.6;
+    }
+
+    .legal_wrap {
+      max-width: 900px;
+      margin: 8vh auto;
+      padding: 0 5vw;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .legal_card {
+      background: var(--wb);
+      border-radius: 24px;
+      padding: 6vh 6vw;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+      border: 1px solid var(--brd);
+      position: relative;
+    }
+
+    .legal_card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 6px;
+      background: linear-gradient(90deg, #3498db, var(--mco));
+    }
+
+    header { text-align: center; margin-bottom: 6vh; }
+    .logo { 
+      font-size: 2.5rem; 
+      font-weight: 800; 
+      color: var(--mco); 
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -1px; }
+    .last_upd { font-size: 0.9rem; color: var(--tx3); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+    .content { margin-top: 4vh; }
+    section { margin-bottom: 5vh; }
+    h2 { 
+      font-size: 1.4rem; 
+      font-weight: 700; 
+      color: var(--mco); 
+      margin-bottom: 1.2rem; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px;
+    }
+
+    p { margin-bottom: 1.2rem; color: var(--tx2); font-size: 1.05rem; }
+    ul { list-style: none; margin-bottom: 1.5rem; }
+    li { 
+      position: relative; 
+      padding-left: 28px; 
+      margin-bottom: 0.8rem; 
+      color: var(--tx2); 
+      font-size: 1rem;
+    }
+    li::before {
+      content: '✔';
+      position: absolute;
+      left: 0;
+      color: var(--mco);
+      font-weight: 800;
+    }
+
+    .alert {
+      background: rgba(52, 152, 219, 0.05);
+      border-radius: 16px;
+      padding: 2.5vh 3vw;
+      border: 1px solid rgba(52, 152, 219, 0.1);
+      margin: 3vh 0;
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+    }
+    .alert i { color: #3498db; font-size: 1.2rem; margin-top: 4px; }
+    .alert p { margin-bottom: 0; font-size: 0.95rem; font-weight: 500; color: var(--tx2); }
+
+    footer {
+      margin-top: 6vh;
+      padding-top: 4vh;
+      border-top: 1px solid var(--brd);
+      text-align: center;
+    }
+
+    .btn_back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: var(--mco);
+      color: white;
+      border-radius: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--tr);
+      box-shadow: 0 10px 20px rgba(41, 199, 46, 0.2);
+    }
+    .btn_back:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 15px 30px rgba(41, 199, 46, 0.3);
+    }
+
+    @media (max-width: 600px) {
+      .legal_card { padding: 5vh 8vw; }
+      h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="legal_wrap">
+    <div class="legal_card">
+      <header>
+        <div class="logo"><i class="fas fa-cookie-bite"></i> NotasWii</div>
+        <h1>Política de Cookies</h1>
+        <p class="last_upd">Transparencia y Privacidad</p>
+      </header>
+
+      <div class="content">
+        <div class="alert">
+          <i class="fas fa-info-circle"></i>
+          <p>Utilizamos cookies y almacenamiento local para que tu experiencia en NotasWii sea instantánea y personalizada. No rastreamos tu actividad fuera de nuestra plataforma.</p>
+        </div>
+
+        <section>
+          <h2><i class="fas fa-key"></i> 1. Cookies Esenciales</h2>
+          <p>Estas son necesarias para que la plataforma funcione. Incluyen:</p>
+          <ul>
+            <li><strong>Autenticación:</strong> Firebase utiliza tokens para mantener tu sesión segura.</li>
+            <li><strong>Seguridad:</strong> Protegen contra accesos no autorizados.</li>
+            <li><strong>Estado de la UI:</strong> Recordamos si prefieres el modo oscuro o el menú abierto/cerrado.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2><i class="fas fa-database"></i> 2. Almacenamiento Local (LocalStorage)</h2>
+          <p>NotasWii utiliza intensivamente el LocalStorage de tu navegador para:</p>
+          <ul>
+            <li>Guardar tus notas y tareas localmente para que carguen en milisegundos.</li>
+            <li>Permitirte trabajar sin conexión a internet.</li>
+            <li>Mantener el historial de tus cambios antes de sincronizar con la nube.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2><i class="fas fa-user-shield"></i> 3. Control de tus Datos</h2>
+          <p>Tú tienes el control total. Puedes borrar todas las cookies y datos locales desde la configuración de tu navegador. Ten en cuenta que:</p>
+          <ul>
+            <li>Si borras el caché local sin haber sincronizado con Firebase, podrías perder cambios no subidos.</li>
+            <li>Cerrar sesión eliminará los tokens de acceso pero mantendrá tus datos locales para tu próxima visita.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2><i class="fas fa-shield-alt"></i> 4. Terceros</h2>
+          <p>NotasWii utiliza servicios de Google (Firebase) para la autenticación y base de datos en tiempo real. Ellos aplican sus propias políticas de cookies de alta seguridad.</p>
+        </section>
+      </div>
+
+      <footer>
+        <a href="/" class="btn_back"><i class="fas fa-arrow-left"></i> Volver a NotasWii</a>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="Paz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Términos y Condiciones - NotasWii</title>
+  <link rel="icon" href="/smile.png">
+  <meta name="theme-color" content="#29C72E">
+  <meta name="description" content="Términos y Condiciones de NotasWii - Tu bloc de notas definitivo con sincronización en la nube.">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --mco: #29C72E;
+      --bg: #f0f7f0;
+      --wb: #ffffff;
+      --tx: #1a1a1a;
+      --tx2: #4a4a4a;
+      --tx3: #7a7a7a;
+      --brd: rgba(0,0,0,0.08);
+      --ff: 'Outfit', sans-serif;
+      --tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1710;
+      --wb: #1a241b;
+      --tx: #f0f0f0;
+      --tx2: #d0d0d0;
+      --tx3: #a0a0a0;
+      --brd: rgba(255,255,255,0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: var(--ff); 
+      background: var(--bg); 
+      color: var(--tx); 
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .legal_wrap {
+      max-width: 900px;
+      margin: 8vh auto;
+      padding: 0 5vw;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .legal_card {
+      background: var(--wb);
+      border-radius: 24px;
+      padding: 6vh 6vw;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+      border: 1px solid var(--brd);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .legal_card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 6px;
+      background: linear-gradient(90deg, var(--mco), #2ecc71);
+    }
+
+    header { text-align: center; margin-bottom: 6vh; }
+    .logo { 
+      font-size: 2.5rem; 
+      font-weight: 800; 
+      color: var(--mco); 
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .logo i { filter: drop-shadow(0 4px 10px rgba(41, 199, 46, 0.3)); }
+
+    h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; letter-spacing: -1px; }
+    .last_upd { font-size: 0.9rem; color: var(--tx3); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+    .content { margin-top: 4vh; }
+    section { margin-bottom: 5vh; }
+    h2 { 
+      font-size: 1.4rem; 
+      font-weight: 700; 
+      color: var(--mco); 
+      margin-bottom: 1.2rem; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px;
+    }
+    h2 i { font-size: 1.1rem; opacity: 0.8; }
+
+    p { margin-bottom: 1.2rem; color: var(--tx2); font-size: 1.05rem; }
+    ul { list-style: none; margin-bottom: 1.5rem; }
+    li { 
+      position: relative; 
+      padding-left: 28px; 
+      margin-bottom: 0.8rem; 
+      color: var(--tx2); 
+      font-size: 1rem;
+    }
+    li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--mco);
+      font-weight: 800;
+    }
+
+    .alert {
+      background: rgba(41, 199, 46, 0.05);
+      border-radius: 16px;
+      padding: 2.5vh 3vw;
+      border: 1px solid rgba(41, 199, 46, 0.1);
+      margin: 3vh 0;
+      display: flex;
+      gap: 15px;
+      align-items: flex-start;
+    }
+    .alert i { color: var(--mco); font-size: 1.2rem; margin-top: 4px; }
+    .alert p { margin-bottom: 0; font-size: 0.95rem; font-weight: 500; color: var(--tx2); }
+
+    footer {
+      margin-top: 6vh;
+      padding-top: 4vh;
+      border-top: 1px solid var(--brd);
+      text-align: center;
+    }
+
+    .btn_back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: var(--mco);
+      color: white;
+      border-radius: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--tr);
+      box-shadow: 0 10px 20px rgba(41, 199, 46, 0.2);
+    }
+    .btn_back:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 15px 30px rgba(41, 199, 46, 0.3);
+      filter: brightness(1.1);
+    }
+
+    @media (max-width: 600px) {
+      .legal_card { padding: 5vh 8vw; }
+      h1 { font-size: 1.8rem; }
+      .logo { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="legal_wrap">
+    <div class="legal_card">
+      <header>
+        <div class="logo"><i class="fas fa-smile-beam"></i> NotasWii</div>
+        <h1>Términos y Condiciones</h1>
+        <p class="last_upd">Actualizado: 27 de Abril, 2026</p>
+      </header>
+
+      <div class="content">
+        <div class="alert">
+          <i class="fas fa-info-circle"></i>
+          <p>Al utilizar NotasWii, aceptas estos términos. Hemos diseñado nuestra plataforma para ser segura, privada y extremadamente eficiente para tu productividad diaria.</p>
+        </div>
+
+        <section>
+          <h2><i class="fas fa-user-check"></i> 1. Aceptación del Servicio</h2>
+          <p>NotasWii es una plataforma de productividad personal que ofrece herramientas de notas, tareas, gestión de enlaces y un procesador de textos avanzado. Al crear una cuenta o usar la versión local, aceptas:</p>
+          <ul>
+            <li>Proporcionar información veraz en caso de registro.</li>
+            <li>No utilizar el servicio para fines ilícitos o malintencionados.</li>
+            <li>Ser responsable de la seguridad de tu sesión y cuenta.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2><i class="fas fa-cloud-upload-alt"></i> 2. Sincronización y Datos</h2>
+          <p>Nuestra tecnología utiliza un sistema de caché híbrido (LocalStorage + Firebase). Entiendes que:</p>
+          <ul>
+            <li>Los datos se guardan localmente para acceso instantáneo.</li>
+            <li>Si inicias sesión, los datos se sincronizan automáticamente con la nube.</li>
+            <li>No nos hacemos responsables por la pérdida de datos debido a la limpieza manual del caché del navegador sin haber sincronizado previamente.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2><i class="fas fa-shield-alt"></i> 3. Propiedad Intelectual</h2>
+          <p>Todo el código, diseño y algoritmos de NotasWii son propiedad de <strong>Wilder Taype</strong>. El contenido que tú creas (tus notas, tareas y documentos) te pertenece exclusivamente a ti.</p>
+          <div class="alert">
+             <i class="fas fa-lock"></i>
+             <p>Privacidad absoluta: No leemos tus notas ni vendemos tus datos a terceros. Tu productividad es tuya.</p>
+          </div>
+        </section>
+
+        <section>
+          <h2><i class="fas fa-exclamation-triangle"></i> 4. Limitación de Responsabilidad</h2>
+          <p>NotasWii se proporciona "tal cual". Aunque nos esforzamos por la perfección técnica, no garantizamos que el servicio sea ininterrumpido o libre de errores al 100%. Te recomendamos sincronizar tus notas importantes con frecuencia.</p>
+        </section>
+
+        <section>
+          <h2><i class="fas fa-envelope-open-text"></i> 5. Contacto</h2>
+          <p>Para cualquier duda legal o soporte técnico, puedes contactar directamente al desarrollador a través de los canales oficiales en GitHub o el panel de feedback de la aplicación.</p>
+        </section>
+      </div>
+
+      <footer>
+        <a href="/" class="btn_back"><i class="fas fa-arrow-left"></i> Volver a NotasWii</a>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>
