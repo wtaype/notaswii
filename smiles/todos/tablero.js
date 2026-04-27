@@ -6,12 +6,20 @@ import { showi, Notificacion, wiAuth, wiTip, getls, savels, Saludar, wiFade } fr
 // ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY = 'tablero_items';
 const uid    = () => 'tb' + Date.now();
-const ls     = {
-  get: ()  => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } },
-  set: (d) => localStorage.setItem(LS_KEY, JSON.stringify(d))
+const DEMO = [
+  { id: 'ej1', titulo: '¡Bienvenido al Tablero!', contenido: 'Aquí puedes organizar tus ideas de forma visual.', color: '#87CEEB', pin: true, creado: Date.now(), synced: false },
+  { id: 'ej2', titulo: 'Tip visual', contenido: 'Usa colores pasteles suaves para categorizar.', color: '#FFB6C1', pin: false, creado: Date.now() - 1000, synced: false }
+];
+
+const ls = {
+  get: () => {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw === null && !wiAuth.user) return [...DEMO];
+    const d = getls(LS_KEY) || (raw?.startsWith('[') ? JSON.parse(raw) : []);
+    return d;
+  },
+  set: (ns) => savels(LS_KEY, ns, 8760) // 1 año
 };
-const cacheOk  = ()  => !!getls('tb_sync');
-const marcarOk = ()  => savels('tb_sync', 1, 168);
 
 // Default pastel palette for dots
 const PALETTE = [
@@ -85,7 +93,7 @@ export const render = () => {
       <p id="tb_count">0 ideas guardadas</p>
     </div>
     <div class="tb_hero_right">
-      <button class="tb_btn_refresh" id="tb_btn_refresh" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
+      <button class="tb_btn_refresh" id="tb_btn_refresh" style="display:none" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
       <button class="tb_btn_new" id="tb_btn_add"><i class="fas fa-plus"></i> Nueva Nota</button>
     </div>
   </div>
@@ -121,6 +129,8 @@ export const render = () => {
 };
 
 // ── LÓGICA DE ESTADO ──────────────────────────────────────────
+let unsub = null;
+
 export const init = async () => {
   let items = ls.get();
   let editingId = null;
@@ -163,22 +173,7 @@ export const init = async () => {
     resumen();
   };
 
-  const syncNube = async (useSkeleton = false) => {
-    if (!wiAuth.logged) return;
-    if (useSkeleton) skeleton();
-    const $ico = $('#tb_btn_refresh i').addClass('tb_spin');
-    try {
-      const remotos = await cargarNube();
-      if (remotos?.length) {
-        const idsRem  = new Set(remotos.map(x => x.id));
-        const locales = items.filter(x => !idsRem.has(x.id));
-        locales.forEach(x => guardarNube(x));
-        items = [...remotos, ...locales];
-        ls.set(items);
-        marcarOk();
-      }
-    } finally { $ico.removeClass('tb_spin'); render$(); }
-  };
+  // Lógica syncNube eliminada: usamos la descarga reactiva pura en wiAuth.on
 
   // ── MODAL ──
   const applyModalColor = (hex) => {
@@ -228,7 +223,17 @@ export const init = async () => {
     .on('click', '#tb_btn_add', () => abrirModal())
     .on('click', '#tb_btn_close', cerrarModal)
     .on('click', '#tb_modal_wrap', function(e) { if (e.target === this) cerrarModal(); })
-    .on('click', '#tb_btn_refresh', () => syncNube(true))
+    .on('click', '#tb_btn_refresh', async function() {
+      const $i = $(this).find('i'); if ($i.hasClass('tb_spin')) return;
+      $i.addClass('tb_spin');
+      const remotos = await cargarNube();
+      if (remotos) {
+        items = remotos;
+        ls.set(items); render$();
+        Notificacion('Sincronizado ✓', 'success');
+      }
+      $i.removeClass('tb_spin');
+    })
     
     // Paleta de colores
     .on('click', '.tb_theme_dot', function() { applyModalColor($(this).data('hex')); })
@@ -254,6 +259,7 @@ export const init = async () => {
         Notificacion('Nota actualizada', 'success');
         if (wiAuth.logged) actualizarNube(it).then(() => { it.synced = true; ls.set(items); cloudSync(it.id); });
       } else {
+        items = items.filter(n => !n.id.startsWith('ej')); // Limpiar DEMO
         const ni = { id: uid(), titulo: tit, contenido: cnt, color: currentColor, pin: false, creado: Date.now(), synced: false };
         items.unshift(ni);
         ls.set(items);
@@ -300,20 +306,25 @@ export const init = async () => {
     });
 
   showi(['.tb_hero_left', '.tb_btn_new'], 50);
+  render$();
 
-  // Cache-first
-  if (items.length) {
-    render$();
-    if (wiAuth.logged && !cacheOk()) syncNube(false);
-  } else if (wiAuth.logged) {
-    await syncNube(true);
-  } else {
-    render$();
-  }
+  // Auth: wiAuth v3.0 reactivo
+  unsub = wiAuth.on(async wi => {
+    $('#tb_btn_refresh').toggle(!!wi);
+    if (wi) {
+      if (items.length === 0) skeleton();
+      const remotos = await cargarNube();
+      items = remotos || [];
+      ls.set(items); render$();
+    } else {
+      localStorage.removeItem(LS_KEY); items = ls.get(); render$();
+    }
+  });
 
   console.log(`✅ ${app} ${version} · Tablero OK`);
 };
 
 export const cleanup = () => {
   $(document).off('click input', '#tb_btn_add, #tb_btn_close, #tb_modal_wrap, #tb_btn_refresh, .tb_theme_dot, #tb_in_color, #tb_btn_save_item, .tb_act_pin, .tb_btn_act.edit, .tb_card, .tb_btn_act.del');
+  unsub?.();
 };

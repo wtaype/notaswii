@@ -17,12 +17,23 @@ const normalizar = (t) => ({
   }))
 });
 
+const DEMO = [
+  { id: 'ej1', titulo: 'Mis Tareas de Hoy', tareas: [
+      { id: 'ej1_1', contenido: 'Revisar pendientes', estado: 'completado' },
+      { id: 'ej1_2', contenido: 'Probar crear una nueva lista', estado: 'pendiente' },
+      { id: 'ej1_3', contenido: 'Sincronizar en la nube ☁️', estado: 'pendiente' }
+    ], pin: true, creado: Date.now() }
+];
+
 const ls = {
-  get: ()  => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]').map(normalizar); } catch { return []; } },
-  set: (d) => localStorage.setItem(LS_KEY, JSON.stringify(d))
+  get: () => {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw === null && !wiAuth.user) return [...DEMO];
+    const d = getls(LS_KEY) || (raw?.startsWith('[') ? JSON.parse(raw) : []);
+    return d.map(normalizar);
+  },
+  set: (ns) => savels(LS_KEY, ns, 8760) // 1 año
 };
-const cacheOk  = ()  => !!getls('tr_sync');
-const marcarOk = ()  => savels('tr_sync', 1, 168);
 
 // ── TEMPLATES ────────────────────────────────────────────────
 const tplItem = ({ id, contenido, estado }) => `
@@ -135,7 +146,7 @@ export const render = () => {
       <span id="tr_resumen" class="tr_count">0/0 completadas</span>
     </div>
     <div class="tr_hero_right">
-      <button class="tr_btn_refresh" id="tr_btn_refresh" ${wiTip('Actualizar desde la nube')}><i class="fas fa-rotate-right"></i></button>
+      <button class="tr_btn_refresh" id="tr_btn_refresh" style="display:none" ${wiTip('Actualizar desde la nube')}><i class="fas fa-rotate-right"></i></button>
       <button class="tr_btn_new" id="tr_btn_new" ${wiTip('Nueva lista')}><i class="fas fa-plus"></i> Nueva lista</button>
     </div>
   </div>
@@ -145,7 +156,8 @@ export const render = () => {
 </div>`;
 };
 
-// ── INIT ─────────────────────────────────────────────────────
+let unsub = null;
+
 export const init = async () => {
   let listas = ls.get();
 
@@ -182,22 +194,7 @@ export const init = async () => {
     });
   };
 
-  const syncNube = async (useSkeleton = false) => {
-    if (!wiAuth.logged) return;
-    if (useSkeleton) skeleton();
-    const $ico = $('#tr_btn_refresh i').addClass('tr_spin');
-    try {
-      const remotas = await cargarNube();
-      if (remotas?.length) {
-        const idsRem  = new Set(remotas.map(t => t.id));
-        const locales = listas.filter(t => !idsRem.has(t.id));
-        locales.forEach(t => guardarNube(t));
-        listas = [...remotas, ...locales];
-        ls.set(listas);
-        marcarOk();
-      }
-    } finally { $ico.removeClass('tr_spin'); render$(); }
-  };
+  // Carga eliminada, sync pura implementada en Auth.
 
   // ── Actualizar barra de progreso en vivo ────────────────
   const updateProg = ($card, lista) => {
@@ -222,6 +219,7 @@ export const init = async () => {
     
     // Nueva lista
     .on('click', '#tr_btn_new', () => {
+      listas = listas.filter(n => !n.id.startsWith('ej')); // Limpiar DEMO
       const t = { id: uid(), titulo: '', tareas: [], pin: false, creado: Date.now() };
       listas.unshift(t);
       ls.set(listas);
@@ -233,8 +231,18 @@ export const init = async () => {
       // NO guardar en nube todavía — esperamos a que tenga al menos 1 tarea
     })
 
-    // Refresh manual
-    .on('click', '#tr_btn_refresh', () => syncNube(true))
+    // Refresh manual puro
+    .on('click', '#tr_btn_refresh', async function() {
+      const $i = $(this).find('i'); if ($i.hasClass('fa-spin')) return;
+      $i.addClass('fa-spin');
+      const remotas = await cargarNube();
+      if (remotas) {
+        listas = remotas;
+        ls.set(listas); render$();
+        Notificacion('Sincronizado ✓', 'success');
+      }
+      $i.removeClass('fa-spin');
+    })
 
     // Cambiar título
     .on('change', '.tr_in_tit', function() {
@@ -343,18 +351,22 @@ export const init = async () => {
     });
 
   showi(['.tr_hero_left', '.tr_hero_right'], 50);
+  render$();
 
-  // Cache-first
-  if (listas.length) {
-    render$();
-    if (wiAuth.logged && !cacheOk()) syncNube(false);
-  } else if (wiAuth.logged) {
-    await syncNube(true);
-  } else {
-    render$();
-  }
+  // Auth: wiAuth v3.0 reactivo
+  unsub = wiAuth.on(async wi => {
+    $('#tr_btn_refresh').toggle(!!wi);
+    if (wi) {
+      if (listas.length === 0) skeleton();
+      const remotas = await cargarNube();
+      listas = remotas || [];
+      ls.set(listas); render$();
+    } else {
+      localStorage.removeItem(LS_KEY); listas = ls.get(); render$();
+    }
+  });
 
   console.log(`✅ ${app} ${version} · Tareas OK`);
 };
 
-export const cleanup = () => $(document).off('click change keydown', '#tr_btn_new, #tr_btn_refresh, .tr_act_del, .tr_act_pin, .tr_act_copy, .tr_in_tit, .tr_in_add, .tr_check, .tr_item_txt, .tr_btn_del_item');
+export const cleanup = () => { $(document).off('click change keydown', '#tr_btn_new, #tr_btn_refresh, .tr_act_del, .tr_act_pin, .tr_act_copy, .tr_in_tit, .tr_in_add, .tr_check, .tr_item_txt, .tr_btn_del_item'); unsub?.(); };

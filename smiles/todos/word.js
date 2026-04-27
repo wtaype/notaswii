@@ -6,12 +6,19 @@ import { showi, Notificacion, wiAuth, wiTip, wicopy, getls, savels, Saludar, wiF
 // ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY = 'word_docs';
 const uid    = () => 'wd' + Date.now();
-const ls     = {
-  get: ()  => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } },
-  set: (d) => localStorage.setItem(LS_KEY, JSON.stringify(d))
+const DEMO = [
+  { id: 'ej1', titulo: 'Documento de Ejemplo', contenido: '<p>Este es un documento de ejemplo. <b>Prueba a editar el texto</b> y usar las herramientas de la barra superior para darle estilo.</p>', pin: true, creado: Date.now(), actualizado: Date.now(), synced: false }
+];
+
+const ls = {
+  get: () => {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw === null && !wiAuth.user) return [...DEMO];
+    const d = getls(LS_KEY) || (raw?.startsWith('[') ? JSON.parse(raw) : []);
+    return d;
+  },
+  set: (ns) => savels(LS_KEY, ns, 8760) // 1 año
 };
-const cacheOk  = ()  => !!getls('wd_sync');
-const marcarOk = ()  => savels('wd_sync', 1, 168);
 
 // ── RENDER HTML ──────────────────────────────────────────────
 export const render = () => `
@@ -91,7 +98,7 @@ export const render = () => `
       <div class="wd_sb_head">
         <h3 id="wd_saludo">Archivos</h3>
         <div style="display:flex; gap: 5px;">
-          <button id="wd_btn_refresh" class="wd_sb_btn" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
+          <button id="wd_btn_refresh" class="wd_sb_btn" style="display:none" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
           <button id="wd_btn_new" class="wd_sb_btn" ${wiTip('Nuevo Documento')}><i class="fas fa-plus"></i></button>
         </div>
       </div>
@@ -185,6 +192,8 @@ const tplListItem = (d, actId) => {
 };
 
 // ── INIT ─────────────────────────────────────────────────────
+let unsub = null;
+
 export const init = async () => {
   let docs = ls.get();
   let act  = null;
@@ -215,6 +224,7 @@ export const init = async () => {
   };
 
   const crearNuevo = () => {
+    docs = docs.filter(n => !n.id.startsWith('ej')); // Limpiar DEMO
     const n = { id: uid(), titulo: '', contenido: '', pin: false, creado: Date.now(), actualizado: Date.now(), synced: false };
     docs.unshift(n);
     ls.set(docs);
@@ -222,27 +232,7 @@ export const init = async () => {
     setTimeout(() => { $('#wd_editor').focus(); document.execCommand('fontName', false, "'Segoe UI', system-ui"); }, 50);
   };
 
-  const syncNube = async (useSkeleton = false) => {
-    if (!wiAuth.logged) return;
-    if (useSkeleton) skeleton();
-    const $ico = $('#wd_btn_refresh i').addClass('wd_spin');
-    try {
-      const remotos = await cargarNube();
-      if (remotos?.length) {
-        const idsRem = new Set(remotos.map(d => d.id));
-        const locales = docs.filter(d => !idsRem.has(d.id));
-        locales.forEach(d => { if (d.contenido || d.titulo) guardarNube(d); });
-        docs = [...remotos, ...locales];
-        ls.set(docs);
-        marcarOk();
-      }
-    } finally { 
-      $ico.removeClass('wd_spin');
-      if (docs.length && !act) cargarDocUI(sorted()[0]);
-      else if (!docs.length) crearNuevo();
-      else renderLista();
-    }
-  };
+  // Sync Nube eliminada - Lógica ahora en Auth.
 
   // Autoguardado local (sin re-renders ni writes a Firestore)
   const triggerSave = () => {
@@ -292,7 +282,18 @@ export const init = async () => {
   $(document)
     .on('click', '#wd_btn_menu',    () => $('#wd_sidebar').toggleClass('closed'))
     .on('click', '#wd_btn_new',     crearNuevo)
-    .on('click', '#wd_btn_refresh', () => syncNube(true))
+    .on('click', '#wd_btn_refresh', async function() {
+      const $i = $(this).find('i'); if ($i.hasClass('wd_spin')) return;
+      $i.addClass('wd_spin');
+      const remotos = await cargarNube();
+      if (remotos) {
+        docs = remotos;
+        ls.set(docs);
+        if (docs.length) cargarDocUI(sorted()[0]); else crearNuevo();
+        Notificacion('Sincronizado ✓', 'success');
+      }
+      $i.removeClass('wd_spin');
+    })
     .on('click', '.wd_doc_item', function(e) {
       if ($(e.target).closest('.wd_doc_acts').length) return;
       const d = docs.find(x => x.id === $(this).data('id'));
@@ -386,20 +387,29 @@ export const init = async () => {
     .on('input', '#wd_c_bg',  function() { document.execCommand('hiliteColor', false, $(this).val()); $('#wd_editor').focus(); });
 
   showi(['.wd_ribbon', '.wd_sidebar', '.wd_page'], 50);
+  if (docs.length) cargarDocUI(sorted()[0]); else crearNuevo();
 
-  // Inicialización (Cache-first)
-  if (docs.length) {
-    cargarDocUI(sorted()[0]);
-    if (wiAuth.logged && !cacheOk()) syncNube(false);
-  } else if (wiAuth.logged) {
-    await syncNube(true);
-  } else {
-    crearNuevo();
-  }
+  // Auth: wiAuth v3.0 reactivo
+  unsub = wiAuth.on(async wi => {
+    $('#wd_btn_refresh').toggle(!!wi);
+    if (wi) {
+      $('#wd_saludo').text(`${Saludar()}${wi.nombre || wi.usuario}`);
+      if (docs.length === 0) skeleton();
+      const remotos = await cargarNube();
+      docs = remotos || [];
+      ls.set(docs);
+      if (docs.length) cargarDocUI(sorted()[0]); else crearNuevo();
+    } else {
+      $('#wd_saludo').text('Archivos');
+      localStorage.removeItem(LS_KEY); docs = ls.get();
+      if (docs.length) cargarDocUI(sorted()[0]); else crearNuevo();
+    }
+  });
 
   console.log(`📝 ${app} ${version} · Word OK`);
 };
 
 export const cleanup = () => {
   $(document).off('click input mouseup keyup change keydown', '#wd_btn_menu, #wd_btn_new, #wd_btn_refresh, .wd_doc_item, .wd_btn_del_doc, #wd_btn_save, .wd_act_pin, #wd_editor, #wd_in_tit, .wd_btn_tool, #wd_f_fam, #wd_f_sz, #wd_l_ht, #wd_c_txt, #wd_c_bg');
+  unsub?.();
 };

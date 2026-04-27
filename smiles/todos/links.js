@@ -6,12 +6,20 @@ import { showi, Notificacion, wiAuth, wiTip, wicopy, getls, savels, Saludar, wiF
 // ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY = 'links';
 const uid    = () => 'lk' + Date.now();
-const ls     = {
-  get: ()  => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } },
-  set: (d) => localStorage.setItem(LS_KEY, JSON.stringify(d))
+const DEMO = [
+  { id: 'ej1', titulo: 'Wilder Taype', contenido: 'https://wtaype.github.io/', pin: true, creado: Date.now(), synced: false },
+  { id: 'ej2', titulo: 'NotasWii', contenido: 'https://notaswii.web.app/', pin: false, creado: Date.now() - 1000, synced: false }
+];
+
+const ls = {
+  get: () => {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw === null && !wiAuth.user) return [...DEMO];
+    const d = getls(LS_KEY) || (raw?.startsWith('[') ? JSON.parse(raw) : []);
+    return d;
+  },
+  set: (ns) => savels(LS_KEY, ns, 8760) // 1 año
 };
-const cacheOk  = ()  => !!getls('lk_sync');
-const marcarOk = ()  => savels('lk_sync', 1, 168);
 
 const extractDomain = (url) => {
   try {
@@ -103,7 +111,7 @@ export const render = () => {
       <span id="lk_count" class="lk_count">0 guardados</span>
     </div>
     <div class="lk_hero_right">
-      <button class="lk_btn_refresh" id="lk_btn_refresh" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
+      <button class="lk_btn_refresh" id="lk_btn_refresh" style="display:none" ${wiTip('Actualizar')}><i class="fas fa-rotate-right"></i></button>
     </div>
   </div>
   
@@ -120,6 +128,8 @@ export const render = () => {
 };
 
 // ── INIT ─────────────────────────────────────────────────────
+let unsub = null;
+
 export const init = async () => {
   let links = ls.get();
 
@@ -146,26 +156,12 @@ export const init = async () => {
     resumen();
   };
 
-  const syncNube = async (useSkeleton = false) => {
-    if (!wiAuth.logged) return;
-    if (useSkeleton) skeleton();
-    const $ico = $('#lk_btn_refresh i').addClass('lk_spin');
-    try {
-      const remotos = await cargarNube();
-      if (remotos?.length) {
-        const idsRem  = new Set(remotos.map(l => l.id));
-        const locales = links.filter(l => !idsRem.has(l.id));
-        locales.forEach(l => guardarNube(l));
-        links = [...remotos, ...locales];
-        ls.set(links);
-        marcarOk();
-      }
-    } finally { $ico.removeClass('lk_spin'); render$(); }
-  };
+  // SyncNube eliminada: Lógica pura de descarga en Auth.
 
   const findLink = (id) => links.find(l => l.id === id);
 
   const agregarLink = () => {
+    links = links.filter(n => !n.id.startsWith('ej')); // Limpiar DEMO
     const $in = $('#lk_in_url');
     let url = $in.val().trim();
     if (!url) return;
@@ -193,7 +189,17 @@ export const init = async () => {
   $(document)
     .on('click', '#lk_btn_add', agregarLink)
     .on('keydown', '#lk_in_url', function(e) { if (e.key === 'Enter') { e.preventDefault(); agregarLink(); } })
-    .on('click', '#lk_btn_refresh', () => syncNube(true))
+    .on('click', '#lk_btn_refresh', async function() {
+      const $i = $(this).find('i'); if ($i.hasClass('lk_spin')) return;
+      $i.addClass('lk_spin');
+      const remotos = await cargarNube();
+      if (remotos) {
+        links = remotos;
+        ls.set(links); render$();
+        Notificacion('Sincronizado ✓', 'success');
+      }
+      $i.removeClass('lk_spin');
+    })
     
     // Edición de título In-place
     .on('change', '.lk_tit', function() {
@@ -237,18 +243,22 @@ export const init = async () => {
 
   showi(['.lk_hero_left', '.lk_add_box'], 50);
   setTimeout(() => $('#lk_in_url').focus(), 150);
+  render$();
 
-  // Cache-first
-  if (links.length) {
-    render$();
-    if (wiAuth.logged && !cacheOk()) syncNube(false);
-  } else if (wiAuth.logged) {
-    await syncNube(true);
-  } else {
-    render$();
-  }
+  // Auth: wiAuth v3.0 reactivo
+  unsub = wiAuth.on(async wi => {
+    $('#lk_btn_refresh').toggle(!!wi);
+    if (wi) {
+      if (links.length === 0) skeleton();
+      const remotos = await cargarNube();
+      links = remotos || [];
+      ls.set(links); render$();
+    } else {
+      localStorage.removeItem(LS_KEY); links = ls.get(); render$();
+    }
+  });
 
   console.log(`✅ ${app} ${version} · Links OK`);
 };
 
-export const cleanup = () => $(document).off('click keydown change', '#lk_btn_add, #lk_in_url, #lk_btn_refresh, .lk_tit, .lk_act_pin, .lk_act_del, .lk_act_copy');
+export const cleanup = () => { $(document).off('click keydown change', '#lk_btn_add, #lk_in_url, #lk_btn_refresh, .lk_tit, .lk_act_pin, .lk_act_del, .lk_act_copy'); unsub?.(); };

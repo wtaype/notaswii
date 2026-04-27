@@ -316,6 +316,8 @@ export const init = async () => {
     $('#mn_btn_sync').toggle(!!wi);
     if (wi) {
       $('#mn_auth_banner').stop(true).fadeOut(150, function(){ $(this).remove(); });
+      if (notas.length === 0) $('#mn_grid').html('<div class="mn_skeleton"></div>'.repeat(3));
+      
       const remotas = await cargarNube();
       notas = remotas || [];
       ls.set(notas); renderNotas();
