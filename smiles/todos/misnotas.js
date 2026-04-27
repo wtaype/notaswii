@@ -302,11 +302,8 @@ export const init = async () => {
     const $i = $(this).find('i'); if ($i.hasClass('fa-spin')) return;
     $i.addClass('fa-spin');
     const remotas = await cargarNube();
-    if (remotas?.length) {
-      const ids = new Set(remotas.map(n => n.id));
-      const locales = notas.filter(n => !ids.has(n.id) && !n.id.startsWith('ej'));
-      if (locales.length) locales.forEach(n => guardarNube(n));
-      notas = [...remotas, ...locales];
+    if (remotas) {
+      notas = remotas;
       guardarLocal(notas); renderNotas();
       Notificacion('Sincronizado ✓', 'success');
     }
@@ -318,15 +315,8 @@ export const init = async () => {
     $('#mn_btn_sync').toggle(!!wi);
     if (wi) {
       $('#mn_auth_banner').stop(true).fadeOut(150, function(){ $(this).remove(); });
-      // Remover notas DEMO temporales antes de fusionar
-      notas = notas.filter(n => !n.id.startsWith('ej'));
       const remotas = await cargarNube();
-      if (remotas?.length) {
-        const ids = new Set(remotas.map(n => n.id));
-        const locales = notas.filter(n => !ids.has(n.id));
-        if (locales.length) locales.forEach(n => guardarNube(n)); // Sube locales reales (no DEMO)
-        notas = [...remotas, ...locales];
-      }
+      notas = remotas || [];
       guardarLocal(notas); renderNotas();
     } else {
       localStorage.removeItem(LS_KEY); notas = cargarLocal(); renderNotas();

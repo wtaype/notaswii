@@ -239,7 +239,7 @@ const redir = wi => {
 };
 
 const entrar = wi => {
-  wiAuth.login(wi, 7);
+  wiAuth.login(wi, 7, ['wiSmart']);
   if (wi?.tema) { localStorage.wiTema = wi.tema; tema(wi.tema); }
   if (esModal()) cerrarTodos();
   redir(wi);

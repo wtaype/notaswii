@@ -29,7 +29,7 @@ const wi = wiAuth.user; wi ? renderHeader(wi) : renderHeader();
 // ── EVENTOS GLOBALES ──────────────────────────────────────────────────────────
 $(document).on('click', '.bt_salir', async () => {
   const { salir } = await import('./todos/login.js');
-  salir(['wiTema', 'wiSmart', 'wiFresh']);
+  salir(['wiTema', 'wiSmart']);
 });
 
 $(document).on('click', '.bt_auth', async function () {

@@ -76,7 +76,7 @@ export const wiAuth = {
   get user() { return getls('wiSmile'); },
   on(fn) { bus.add(fn); const u = this.user; if (u) fn(u); return () => bus.delete(fn); },
   emit(wi) { bus.forEach(fn => { try { fn(wi); } catch(e) { console.error('wiAuth:', e); } }); },
-  login(wi, h = 144) { savels('wiSmile', wi, h); this.emit(wi); },
+  login(wi, h = 144, keep = []) { removels.except(['wiTema', ...keep]); savels('wiSmile', wi, h); this.emit(wi); },
   logout(keep = []) { removels.except(['wiTema', ...keep]); this.emit(null); }
 };
 
