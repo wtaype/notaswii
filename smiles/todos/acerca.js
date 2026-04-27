@@ -80,7 +80,7 @@ export const render = () => `
           <div class="ac_stats_grid">
             ${stats.map(s => `
               <div class="ac_stat_item">
-                <strong class="ac_counter" data-target="${s.num.replace(/\D/g,'')}">${s.num}</strong>
+                <strong data-target="${s.num.replace(/\D/g,'')}">${s.num}</strong>
                 <span>${s.label}</span>
               </div>
             `).join('')}
