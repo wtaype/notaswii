@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="Paz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Feedback - NotasWii</title>
+  <link rel="icon" href="/smile.png">
+  <meta name="theme-color" content="#29C72E">
+  <meta name="description" content="Tu opinión nos ayuda a mejorar NotasWii. Envíanos tus sugerencias o reporta errores.">
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --mco: #29C72E;
+      --bg: #f0f7f0;
+      --wb: #ffffff;
+      --tx: #1a1a1a;
+      --tx2: #4a4a4a;
+      --tx3: #7a7a7a;
+      --brd: rgba(0,0,0,0.08);
+      --ff: 'Outfit', sans-serif;
+      --tr: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: var(--ff); 
+      background: var(--bg); 
+      color: var(--tx); 
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .feedback_wrap {
+      max-width: 600px;
+      width: 90%;
+      margin: 4vh auto;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .feedback_card {
+      background: var(--wb);
+      border-radius: 30px;
+      padding: 6vh 6vw;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+      border: 1px solid var(--brd);
+      text-align: center;
+    }
+
+    .icon_box {
+      width: 80px;
+      height: 80px;
+      background: rgba(41, 199, 46, 0.1);
+      color: var(--mco);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto 3vh;
+      transform: rotate(-10deg);
+      transition: var(--tr);
+    }
+    .feedback_card:hover .icon_box { transform: rotate(0deg) scale(1.1); }
+
+    h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -1px; }
+    p { color: var(--tx2); margin-bottom: 4vh; font-size: 1.1rem; }
+
+    .channels {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2vh;
+      margin-bottom: 5vh;
+    }
+
+    .channel_btn {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 20px;
+      background: var(--bg);
+      border: 1px solid var(--brd);
+      border-radius: 20px;
+      text-decoration: none;
+      color: var(--tx);
+      transition: var(--tr);
+      text-align: left;
+    }
+    .channel_btn:hover {
+      background: var(--wb);
+      border-color: var(--mco);
+      transform: translateX(10px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    }
+
+    .channel_btn i { font-size: 1.5rem; color: var(--mco); }
+    .channel_info b { display: block; font-size: 1.1rem; color: var(--tx); }
+    .channel_info span { font-size: 0.9rem; color: var(--tx3); }
+
+    .btn_back {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--tx3);
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--tr);
+      font-size: 0.95rem;
+    }
+    .btn_back:hover { color: var(--mco); }
+
+    @media (max-width: 480px) {
+      .feedback_card { padding: 5vh 8vw; }
+      h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="feedback_wrap">
+    <div class="feedback_card">
+      <div class="icon_box"><i class="fas fa-comment-dots"></i></div>
+      <h1>¿Cómo podemos mejorar?</h1>
+      <p>Tu opinión es el motor que impulsa NotasWii. Si tienes una sugerencia, reportaste un error o simplemente quieres decir hola, ¡estamos aquí!</p>
+      
+      <div class="channels">
+        <a href="mailto:wilder.taype@hotmail.com" class="channel_btn">
+          <i class="fas fa-envelope"></i>
+          <div class="channel_info">
+            <b>Correo Electrónico</b>
+            <span>wilder.taype@hotmail.com</span>
+          </div>
+        </a>
+        
+        <a href="https://github.com/wtaype/notaswii/issues" target="_blank" class="channel_btn">
+          <i class="fab fa-github"></i>
+          <div class="channel_info">
+            <b>GitHub Issues</b>
+            <span>Reporta bugs o pide nuevas funciones</span>
+          </div>
+        </a>
+      </div>
+
+      <a href="/" class="btn_back"><i class="fas fa-arrow-left"></i> Volver a la plataforma</a>
+    </div>
+  </div>
+</body>
+</html>
