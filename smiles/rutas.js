@@ -37,7 +37,7 @@ export const NAV = {
     ],
   },
   gestor: {
-    nvleft:  [{ href: '/gestor', page: 'gestor', ico: 'fa-house', txt: 'Inicio' }],
+    nvleft:  [{ href: '/gestor', page: 'gestor', ico: 'fa-house', txt: 'Dashboard' }, ...COMUN],
     nvright: [
       { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
       { isPerfil: true }, { isSalir: true },

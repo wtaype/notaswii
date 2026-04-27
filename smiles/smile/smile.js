@@ -11,8 +11,10 @@ const waitAuth = () => new Promise(r => {
 });
 
 const getRawLs = (key) => {
-  try { return JSON.parse(localStorage.getItem(key)) || []; }
-  catch { return []; }
+  try {
+    const r = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(r) ? r : (r?.value && Array.isArray(r.value) ? r.value : []);
+  } catch { return []; }
 };
 
 const FRASES = [
@@ -89,7 +91,7 @@ export const init = async () => {
 
   // 3. TARJETAS COMPACTAS (BENTO STYLE)
   const stats = [
-    { n: 'Notas Rápidas', c: data.notas.length,   i: 'fa-book-open',  col: 'var(--Futuro)', bg: 'var(--bg6)', url: '/' },
+    { n: 'Notas Rápidas', c: data.notas.length,   i: 'fa-book-open',  col: 'var(--Futuro)', bg: 'var(--bg6)', url: '/misnotas' },
     { n: 'Flash Cards',   c: data.flash.length,   i: 'fa-bolt',       col: 'var(--Oro)',    bg: 'var(--bg6)', url: '/flash' },
     { n: 'Listas Tareas', c: data.tareas.length,  i: 'fa-list-check', col: 'var(--Dulce)',  bg: 'var(--bg6)', url: '/tareas' },
     { n: 'Documentos',    c: data.word.length,    i: 'fa-file-word',  col: 'var(--Cielo)',  bg: 'var(--bg6)', url: '/word' },
@@ -114,7 +116,7 @@ export const init = async () => {
   data.tareas.forEach(x  => tl.push({ ...x, mod: 'Tareas',  i: 'fa-list-check', col: 'var(--Dulce)', url: '/tareas' }));
   data.tablero.forEach(x => tl.push({ ...x, mod: 'Tablero', i: 'fa-th-large',   col: 'var(--Paz)', url: '/tablero' }));
   data.links.forEach(x   => tl.push({ ...x, mod: 'Links',   i: 'fa-link',       col: 'var(--Mora)', url: '/links' }));
-  data.notas.forEach(x   => tl.push({ ...x, mod: 'Notas',   i: 'fa-book-open',  col: 'var(--Futuro)', url: '/' }));
+  data.notas.forEach(x   => tl.push({ ...x, mod: 'Notas',   i: 'fa-book-open',  col: 'var(--Futuro)', url: '/misnotas' }));
 
   tl.sort((a, b) => (b.actualizado || b.creado || 0) - (a.actualizado || a.creado || 0));
   const recent = tl.slice(0, 8); // Top 8 para llenar el espacio limpiamente

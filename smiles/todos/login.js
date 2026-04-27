@@ -16,6 +16,7 @@ let modal = 'si', link = 'si', restablecer = 'si', login = 'si', registrar = 'si
 
 // Ruta por rol
 const ROL_PATH = { smile: '/misnotas', gestor: '/gestor', empresa: '/empresa', admin: '/admin' };
+const SEGMENTO_MAP = { smile: 'creador', gestor: 'negocio', empresa: 'empresa' };
 
 const err = {
   'auth/email-already-in-use':'Email ya registrado', 'auth/weak-password':'Contraseña débil (mín. 6)',
@@ -372,7 +373,15 @@ $(document)
         estado:    'activo',
         uid:       user.uid,
         terminos:  true,
-        tema:      localStorage.wiTema || 'Cielo|#0EBEFF'
+        tema:      localStorage.wiTema || 'Cielo|#0EBEFF',
+        
+        // ── CAMPOS PRO ──
+        avatar:    user.photoURL || '',
+        bio:       '',
+        plan:      'free',
+        segmento:  SEGMENTO_MAP[rolSeleccionado] || 'creador',
+        verificado: false,
+        registradoPor: 'google'
       };
 
       await setDoc(doc(db, 'smiles', u), { ...wi, creado: serverTimestamp() });
@@ -458,7 +467,6 @@ $(document)
       const rolFinal    = rolSeleccionado;
       const estado      = esPendiente ? 'pendiente' : 'activo';
       
-      const segmentoMap = { smile: 'creador', gestor: 'negocio', empresa: 'empresa' };
 
       const wi = {
         usuario:   d.usuario,
@@ -471,11 +479,11 @@ $(document)
         terminos:  true,
         tema:      localStorage.wiTema || 'Cielo|#0EBEFF',
         
-        // ── CAMPOS LINKWII ──
+        // ── CAMPOS ──
         avatar:    '',
         bio:       '',
         plan:      'free',
-        segmento:  segmentoMap[rolFinal] || 'creador',
+        segmento:  SEGMENTO_MAP[rolFinal] || 'creador',
         verificado: false,
         registradoPor: 'correo',
 
