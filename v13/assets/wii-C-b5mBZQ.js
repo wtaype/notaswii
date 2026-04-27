@@ -1,0 +1,1 @@
+var e=`ChatWil`,t=2026,n=`@wilder.taype`,r=`https://wtaype.github.io/`,i=`v16`;export{e as app,n as autor,t as lanzamiento,r as link,i as version};
