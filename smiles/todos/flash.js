@@ -6,13 +6,20 @@ import { showi, Notificacion, wiAuth, wiTip, wicopy, getls, savels, Saludar, wiF
 // ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY = 'flash';
 const uid    = () => 'fl' + Date.now();
+const DEMO   = [
+  { id: 'ej1', pin: true, contenido: '⚡ ¡Bienvenido a Flash!\nEscribe aquí cualquier idea suelta y dale a Enter.', creado: Date.now() },
+  { id: 'ej2', pin: false, contenido: '☁️ Crea una cuenta para sincronizar todos tus flashes en la nube.', creado: Date.now() - 1000 }
+];
 const ls     = {
-  get: ()  => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); } catch { return []; } },
+  get: ()  => {
+    try {
+      const val = localStorage.getItem(LS_KEY);
+      if (val === null && !wiAuth.user) return [...DEMO];
+      return JSON.parse(val || '[]');
+    } catch { return wiAuth.user ? [] : [...DEMO]; }
+  },
   set: (d) => localStorage.setItem(LS_KEY, JSON.stringify(d))
 };
-// Cache de sincronización (7 días via savels/getls)
-const cacheOk  = ()    => !!getls('fl_sync');
-const marcarOk = ()    => savels('fl_sync', 1, 168);
 
 // ── TIEMPO RELATIVO ──────────────────────────────────────────
 const tiempoAtras = (ts) => {
@@ -98,7 +105,7 @@ export const render = () => {
   </div>
   <div class="fl_timeline">
     <div class="fl_timeline_tit">
-      <button id="fl_btn_refresh" class="fl_refresh_btn" ${wiTip('Actualizar desde la nube')}>
+      <button id="fl_btn_refresh" class="fl_refresh_btn" style="display:none" ${wiTip('Actualizar desde la nube')}>
         <i class="fas fa-clock-rotate-left"></i>
       </button>
       Tus últimos flashes
@@ -111,6 +118,8 @@ export const render = () => {
 };
 
 // ── INIT ─────────────────────────────────────────────────────
+let unsub = null;
+
 export const init = async () => {
   const $inp = $('#fl_input');
   let flashes = ls.get();
@@ -137,18 +146,14 @@ export const init = async () => {
   };
 
   const syncNube = async (useSkeleton = false) => {
-    if (!wiAuth.logged) return;
+    if (!wiAuth.user) return;
     if (useSkeleton) skeleton();
     const $ico = $('#fl_btn_refresh i').addClass('fl_spin');
     try {
       const remotos = await cargarNube();
-      if (remotos?.length) {
-        const idsRem = new Set(remotos.map(f => f.id));
-        const locales = flashes.filter(f => !idsRem.has(f.id));
-        locales.forEach(f => guardarNube(f));
-        flashes = [...remotos, ...locales];
+      if (remotos) {
+        flashes = remotos;
         ls.set(flashes);
-        marcarOk();
       }
     } finally { $ico.removeClass('fl_spin'); render$(); }
   };
@@ -156,6 +161,7 @@ export const init = async () => {
   // ── Guardar nuevo flash ─────────────────────────────────
   const guardarFlash = () => {
     const val = $inp.val().trim(); if (!val) return;
+    flashes = flashes.filter(f => !f.id.startsWith('ej'));
     const f = { id: uid(), contenido: val, pin: false, creado: Date.now() };
     flashes.unshift(f);
     ls.set(flashes);
@@ -163,7 +169,7 @@ export const init = async () => {
     $('.fl_input_box').removeClass('active');
     Notificacion('¡Flash capturado! ⚡', 'success');
     render$();
-    if (wiAuth.logged) guardarNube(f).then(() => { f.synced = true; ls.set(flashes); cloudSync(f.id); });
+    if (wiAuth.user) guardarNube(f).then(() => { f.synced = true; ls.set(flashes); cloudSync(f.id); });
   };
 
   // ── Eventos ─────────────────────────────────────────────
@@ -190,7 +196,7 @@ export const init = async () => {
       ls.set(flashes);
       $(this).closest('.fl_card').slideUp(200, function() { $(this).remove(); });
       Notificacion('Flash eliminado', 'info');
-      if (wiAuth.logged) eliminarNube(id);
+      if (wiAuth.user) eliminarNube(id);
     })
     .on('click', '.fl_act_pin', function() {
       const id = $(this).data('id');
@@ -198,7 +204,7 @@ export const init = async () => {
       f.pin = !f.pin;
       ls.set(flashes); render$();
       Notificacion(f.pin ? 'Fijado ✓' : 'Desanclado', 'success');
-      if (wiAuth.logged) actualizarNube(f).then(() => cloudSync(f.id));
+      if (wiAuth.user) actualizarNube(f).then(() => cloudSync(f.id));
     })
     .on('click', '.fl_act_edit', function() {
       const id = $(this).data('id');
@@ -217,26 +223,28 @@ export const init = async () => {
         Object.assign(f, { contenido: nuevo, actualizado: Date.now() });
         ls.set(flashes); render$();
         Notificacion('Flash actualizado ✓', 'success');
-        if (wiAuth.logged) actualizarNube(f).then(() => cloudSync(f.id));
+        if (wiAuth.user) actualizarNube(f).then(() => cloudSync(f.id));
       });
     });
 
   showi(['.fl_hero > *', '.fl_timeline_tit'], 60);
+  render$(); // Carga los DEMO locales al instante
 
-  // Cache-first: local instantáneo, nube solo la primera vez
-  if (flashes.length) {
-    render$();
-    if (wiAuth.logged && !cacheOk()) syncNube(false);
-  } else if (wiAuth.logged) {
-    await syncNube(true);
-  } else {
-    render$();
-  }
+  // Auth: wiAuth v3.0 reacciona de inmediato si hay sesión
+  unsub = wiAuth.on(async wi => {
+    $('#fl_btn_refresh').toggle(!!wi);
+    if (wi) {
+      await syncNube(true);
+    } else {
+      localStorage.removeItem(LS_KEY); flashes = ls.get(); render$();
+    }
+  });
 
   setTimeout(() => $inp.focus(), 300);
   console.log(`⚡ ${app} ${version} · Flash OK`);
 };
 
 export const cleanup = () => {
+  unsub?.();
   $(document).off('click keydown', '#fl_input, #fl_btn_send, #fl_btn_refresh, .fl_act_del, .fl_act_pin, .fl_act_edit, .fl_act_copy');
 };

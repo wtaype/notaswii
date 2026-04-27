@@ -1,7 +1,7 @@
 import './misnotas.css';
 import $ from 'jquery';
 import { app, version } from '../wii.js';
-import { wiAuth, Notificacion, wiTip, showi } from '../widev.js';
+import { wiAuth, Notificacion, wiTip, showi, savels, getls } from '../widev.js';
 
 // ── CONFIG ──────────────────────────────────────────────────
 const LS_KEY    = 'misNotas';
@@ -21,14 +21,15 @@ const DEMO = [
   { id: 'ej3', tipo: 'link',  titulo: 'Mis Proyectos',             link: 'https://wtaype.web.app/proyectos', pin: false, creado: Date.now() - 2000 },
 ];
 
-const cargarLocal  = () => {
-  try {
-    const d = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
-    if (!d.length && !wiAuth.user) return [...DEMO];
+const ls = {
+  get: () => {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw === null && !wiAuth.user) return [...DEMO];
+    const d = getls(LS_KEY) || (raw?.startsWith('[') ? JSON.parse(raw) : []);
     return d.map(n => ({ ...n, link: n.link || n.url || '', pin: n.pin ?? n.fijada ?? false, creado: n.creado || n.fecha || Date.now() }));
-  } catch { return wiAuth.user ? [] : [...DEMO]; }
+  },
+  set: (ns) => savels(LS_KEY, ns, 8760) // 1 año
 };
-const guardarLocal = (ns) => localStorage.setItem(LS_KEY, JSON.stringify(ns));
 const autoTitulo   = (tipo, lista) => `${tipos[tipo]?.label || 'Nota'} ${lista.filter(n => n.tipo === tipo).length + 1}`;
 
 // ── FIRESTORE (una sola lectura al init, no tiempo real) ────
@@ -259,7 +260,7 @@ const guardar = async () => {
     notas.unshift(obj);
   }
 
-  guardarLocal(notas);
+  ls.set(notas);
   if (esAuth && obj) guardarNube(obj);
   renderNotas();
   Notificacion(modoEdicion ? 'Nota actualizada ✓' : 'Nota guardada ✓', 'success');
@@ -269,7 +270,7 @@ const guardar = async () => {
 const eliminar = (id) => {
   if (!confirm('¿Eliminar esta nota?')) return;
   notas = notas.filter(n => n.id !== id);
-  guardarLocal(notas);
+  ls.set(notas);
   if (wiAuth.user) eliminarNube(id);
   if (modoEdicion === id) limpiarForm();
   renderNotas();
@@ -280,7 +281,7 @@ const eliminar = (id) => {
 let unsub = null;
 
 export const init = async () => {
-  notas = cargarLocal();
+  notas = ls.get();
   renderNotas();
 
   // Eventos
@@ -304,7 +305,7 @@ export const init = async () => {
     const remotas = await cargarNube();
     if (remotas) {
       notas = remotas;
-      guardarLocal(notas); renderNotas();
+      ls.set(notas); renderNotas();
       Notificacion('Sincronizado ✓', 'success');
     }
     $i.removeClass('fa-spin');
@@ -317,9 +318,9 @@ export const init = async () => {
       $('#mn_auth_banner').stop(true).fadeOut(150, function(){ $(this).remove(); });
       const remotas = await cargarNube();
       notas = remotas || [];
-      guardarLocal(notas); renderNotas();
+      ls.set(notas); renderNotas();
     } else {
-      localStorage.removeItem(LS_KEY); notas = cargarLocal(); renderNotas();
+      localStorage.removeItem(LS_KEY); notas = ls.get(); renderNotas();
       if (!$('#mn_auth_banner').length) $('#mn_form').append(`<div class="mn_auth_banner" id="mn_auth_banner" style="display:none"><i class="fas fa-cloud-arrow-up"></i><p>Crea una cuenta para sincronizar</p><button class="mn_btn_login bt_auth login"><i class="fas fa-user-plus"></i> Crear cuenta</button></div>`), $('#mn_auth_banner').fadeIn(250);
     }
   });
