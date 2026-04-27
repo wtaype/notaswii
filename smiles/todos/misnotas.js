@@ -304,8 +304,10 @@ export const init = async () => {
     $i.addClass('fa-spin');
     const remotas = await cargarNube();
     if (remotas) {
-      notas = remotas;
-      ls.set(notas); renderNotas();
+      if (JSON.stringify(remotas) !== JSON.stringify(notas)) {
+        notas = remotas;
+        ls.set(notas); renderNotas();
+      }
       Notificacion('Sincronizado ✓', 'success');
     }
     $i.removeClass('fa-spin');
@@ -319,8 +321,12 @@ export const init = async () => {
       if (notas.length === 0) $('#mn_grid').html('<div class="mn_skeleton"></div>'.repeat(3));
       
       const remotas = await cargarNube();
-      notas = remotas || [];
-      ls.set(notas); renderNotas();
+      if (remotas) {
+        if (JSON.stringify(remotas) !== JSON.stringify(notas)) {
+          notas = remotas;
+          ls.set(notas); renderNotas();
+        }
+      }
     } else {
       localStorage.removeItem(LS_KEY); notas = ls.get(); renderNotas();
       if (!$('#mn_auth_banner').length) $('#mn_form').append(`<div class="mn_auth_banner" id="mn_auth_banner" style="display:none"><i class="fas fa-cloud-arrow-up"></i><p>Crea una cuenta para sincronizar</p><button class="mn_btn_login bt_auth login"><i class="fas fa-user-plus"></i> Crear cuenta</button></div>`), $('#mn_auth_banner').fadeIn(250);

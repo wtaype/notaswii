@@ -194,8 +194,10 @@ export const init = async () => {
       $i.addClass('lk_spin');
       const remotos = await cargarNube();
       if (remotos) {
-        links = remotos;
-        ls.set(links); render$();
+        if (JSON.stringify(remotos) !== JSON.stringify(links)) {
+          links = remotos;
+          ls.set(links); render$();
+        }
         Notificacion('Sincronizado ✓', 'success');
       }
       $i.removeClass('lk_spin');
@@ -251,8 +253,12 @@ export const init = async () => {
     if (wi) {
       if (links.length === 0) skeleton();
       const remotos = await cargarNube();
-      links = remotos || [];
-      ls.set(links); render$();
+      if (remotos) {
+        if (JSON.stringify(remotos) !== JSON.stringify(links)) {
+          links = remotos;
+          ls.set(links); render$();
+        }
+      }
     } else {
       localStorage.removeItem(LS_KEY); links = ls.get(); render$();
     }

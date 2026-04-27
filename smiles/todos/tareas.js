@@ -179,12 +179,11 @@ export const init = async () => {
     return (b.creado||0) - (a.creado||0);
   });
 
-  const render$ = async () => {
+  const render$ = () => {
     const lista = sorted();
-    await wiFade('#tr_grid', lista.length
+    $('#tr_grid').html(lista.length
       ? lista.map(tplCard).join('')
-      : `<div class="tr_empty"><i class="fas fa-check-double"></i><span>Sin listas. Crea una para organizar tus tareas.</span></div>`,
-      80);
+      : `<div class="tr_empty"><i class="fas fa-check-double"></i><span>Sin listas. Crea una para organizar tus tareas.</span></div>`);
     if (lista.length) showi(['.tr_grid > *'], 60);
     resumen();
     // Auto-ajustar altura de tareas existentes tras renderizar
@@ -237,8 +236,10 @@ export const init = async () => {
       $i.addClass('fa-spin');
       const remotas = await cargarNube();
       if (remotas) {
-        listas = remotas;
-        ls.set(listas); render$();
+        if (JSON.stringify(remotas) !== JSON.stringify(listas)) {
+          listas = remotas;
+          ls.set(listas); render$();
+        }
         Notificacion('Sincronizado ✓', 'success');
       }
       $i.removeClass('fa-spin');
@@ -359,8 +360,12 @@ export const init = async () => {
     if (wi) {
       if (listas.length === 0) skeleton();
       const remotas = await cargarNube();
-      listas = remotas || [];
-      ls.set(listas); render$();
+      if (remotas) {
+        if (JSON.stringify(remotas) !== JSON.stringify(listas)) {
+          listas = remotas;
+          ls.set(listas); render$();
+        }
+      }
     } else {
       localStorage.removeItem(LS_KEY); listas = ls.get(); render$();
     }

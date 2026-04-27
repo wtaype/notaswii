@@ -145,18 +145,7 @@ export const init = async () => {
     if (lista.length) showi(['.fl_grid > *'], 50);
   };
 
-  const syncNube = async (useSkeleton = false) => {
-    if (!wiAuth.user) return;
-    if (useSkeleton) skeleton();
-    const $ico = $('#fl_btn_refresh i').addClass('fl_spin');
-    try {
-      const remotos = await cargarNube();
-      if (remotos) {
-        flashes = remotos;
-        ls.set(flashes);
-      }
-    } finally { $ico.removeClass('fl_spin'); render$(); }
-  };
+  // Lógica syncNube eliminada: usamos la recarga reactiva de wiAuth.on
 
   // ── Guardar nuevo flash ─────────────────────────────────
   const guardarFlash = () => {
@@ -183,7 +172,19 @@ export const init = async () => {
 
   $(document)
     .on('click', '#fl_btn_send',    guardarFlash)
-    .on('click', '#fl_btn_refresh', () => syncNube(true))
+    .on('click', '#fl_btn_refresh', async function() {
+      const $i = $(this).find('i'); if ($i.hasClass('fl_spin')) return;
+      $i.addClass('fl_spin');
+      const remotos = await cargarNube();
+      if (remotos) {
+        if (JSON.stringify(remotos) !== JSON.stringify(flashes)) {
+          flashes = remotos;
+          ls.set(flashes); render$();
+        }
+        Notificacion('Sincronizado ✓', 'success');
+      }
+      $i.removeClass('fl_spin');
+    })
     .on('keydown', '#fl_input',     (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); guardarFlash(); } })
     .on('click', '.fl_act_copy', function() {
       const f = findFlash($(this).data('id')); if (!f) return;
@@ -234,7 +235,14 @@ export const init = async () => {
   unsub = wiAuth.on(async wi => {
     $('#fl_btn_refresh').toggle(!!wi);
     if (wi) {
-      await syncNube(true);
+      if (flashes.length === 0) skeleton();
+      const remotos = await cargarNube();
+      if (remotos) {
+        if (JSON.stringify(remotos) !== JSON.stringify(flashes)) {
+          flashes = remotos;
+          ls.set(flashes); render$();
+        }
+      }
     } else {
       localStorage.removeItem(LS_KEY); flashes = ls.get(); render$();
     }

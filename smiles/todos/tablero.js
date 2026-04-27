@@ -228,8 +228,10 @@ export const init = async () => {
       $i.addClass('tb_spin');
       const remotos = await cargarNube();
       if (remotos) {
-        items = remotos;
-        ls.set(items); render$();
+        if (JSON.stringify(remotos) !== JSON.stringify(items)) {
+          items = remotos;
+          ls.set(items); render$();
+        }
         Notificacion('Sincronizado ✓', 'success');
       }
       $i.removeClass('tb_spin');
@@ -314,8 +316,12 @@ export const init = async () => {
     if (wi) {
       if (items.length === 0) skeleton();
       const remotos = await cargarNube();
-      items = remotos || [];
-      ls.set(items); render$();
+      if (remotos) {
+        if (JSON.stringify(remotos) !== JSON.stringify(items)) {
+          items = remotos;
+          ls.set(items); render$();
+        }
+      }
     } else {
       localStorage.removeItem(LS_KEY); items = ls.get(); render$();
     }
