@@ -1,4 +1,5 @@
 import $  from 'jquery'; 
+import { version } from './wii.js';
 
 // wiCode v1.0 - Bloque de código con copy + highlight __________________________
 export const wiCode = (sel) => {
@@ -338,6 +339,30 @@ export const wiTiempo = (ts) => {
   const d = Math.floor(h / 24);
   if (d < 7)   return `Hace ${d}d`;
   return formatearFechaHora(ts);
+};
+
+// WI VERSION V13.0 — Gestión de actualizaciones Premium __________________________
+export const wiVersion = () => {
+  const vCod = version; 
+  const vLoc = localStorage.getItem('wi_v');
+
+  if (vLoc && vLoc !== vCod) {
+    if (!$('.version_alert').length) {
+      $('body').append(`
+        <div class="version_alert">
+          <div class="v_icon"><i class="fas fa-sparkles"></i></div>
+          <div class="v_txt">
+            <b>Nueva Versión</b>
+            <span>Actualizado a ${vCod}</span>
+          </div>
+          <button class="v_btn" onclick="location.reload(true)">Actualizar</button>
+        </div>
+      `);
+      setTimeout(() => $('.version_alert').addClass('active'), 200);
+    }
+  } else {
+    localStorage.setItem('wi_v', vCod);
+  }
 };
 
 // Meses entre una fecha y hoy
