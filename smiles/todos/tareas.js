@@ -81,33 +81,40 @@ const getFS = async () => {
   return { db, ...await import('firebase/firestore') };
 };
 
+// Upsert universal: usa setDoc+merge para nunca fallar si el doc no existe aún
 const guardarNube = async (t) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user;
+  if (!wi?.email) return; // solo necesita email, no usuario
   try {
     const { db, doc, setDoc, serverTimestamp } = await getFS();
     await setDoc(doc(db, 'tareas', t.id), {
-      id:       t.id,
-      usuario:  wi.usuario,
-      email:    wi.email,
-      titulo:   String(t.titulo || ''),
-      tareas:   (t.tareas || []).map(({ id, contenido, estado }) => ({ id, contenido: String(contenido || ''), estado: estado || 'pendiente' })),
-      pin:      !!t.pin,
-      creado:   serverTimestamp(),
+      id:          t.id,
+      usuario:     wi.usuario || wi.email,
+      email:       wi.email,
+      titulo:      String(t.titulo || ''),
+      tareas:      (t.tareas || []).map(({ id, contenido, estado }) => ({ id, contenido: String(contenido || ''), estado: estado || 'pendiente' })),
+      pin:         !!t.pin,
+      creado:      serverTimestamp(),
       actualizado: serverTimestamp()
     });
   } catch(e) { console.error('[tareas] guardarNube:', e); }
 };
 
+// actualizarNube ahora también usa setDoc+merge → nunca falla si el doc no existe
 const actualizarNube = async (t) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user;
+  if (!wi?.email) return;
   try {
-    const { db, doc, updateDoc, serverTimestamp } = await getFS();
-    await updateDoc(doc(db, 'tareas', t.id), {
-      titulo:   String(t.titulo || ''),
-      tareas:   (t.tareas || []).map(({ id, contenido, estado }) => ({ id, contenido: String(contenido || ''), estado: estado || 'pendiente' })),
-      pin:      !!t.pin,
+    const { db, doc, setDoc, serverTimestamp } = await getFS();
+    await setDoc(doc(db, 'tareas', t.id), {
+      id:          t.id,
+      usuario:     wi.usuario || wi.email,
+      email:       wi.email,
+      titulo:      String(t.titulo || ''),
+      tareas:      (t.tareas || []).map(({ id, contenido, estado }) => ({ id, contenido: String(contenido || ''), estado: estado || 'pendiente' })),
+      pin:         !!t.pin,
       actualizado: serverTimestamp()
-    });
+    }, { merge: true });
   } catch(e) { console.error('[tareas] actualizarNube:', e); }
 };
 
@@ -202,7 +209,14 @@ export const init = async () => {
     const done  = items.filter(i => i.estado === 'completado').length;
     $card.find('.tr_progress_bar').css('width', total ? `${(done/total)*100}%` : '0%');
     $card.find('.tr_prog_txt').text(`${done}/${total} completadas`);
-    $card.find('.tr_done_badge').toggle(done === total && total > 0);
+    // Badge "¡Listo!": insertar dinámicamente si no existe, remover si ya no aplica
+    const $stat = $card.find('.tr_stat');
+    const allDone = done === total && total > 0;
+    if (allDone && !$stat.find('.tr_done_badge').length) {
+      $stat.append('<span class="tr_done_badge"><i class="fas fa-star"></i> ¡Listo!</span>');
+    } else if (!allDone) {
+      $stat.find('.tr_done_badge').remove();
+    }
     resumen();
   };
 
@@ -252,7 +266,7 @@ export const init = async () => {
       t.titulo = $(this).val();
       ls.set(listas);
       // Solo sincronizar si ya tiene tareas (evitar writes en listas vacías)
-      if (wiAuth.logged && t.tareas.length) actualizarNube(t).then(() => cloudSync(id));
+      if (wiAuth.user && t.tareas.length) actualizarNube(t).then(() => cloudSync(id));
     })
 
     // Eliminar lista
@@ -264,7 +278,7 @@ export const init = async () => {
       $(`#tr_${id}`).slideUp(280, function() { $(this).remove(); if (!listas.length) render$(); });
       resumen();
       Notificacion('Lista eliminada', 'info');
-      if (wiAuth.logged) eliminarNube(id);
+      if (wiAuth.user) eliminarNube(id);
     })
 
     // Pin / Despin lista
@@ -274,7 +288,7 @@ export const init = async () => {
       t.pin = !t.pin;
       ls.set(listas); render$();
       Notificacion(t.pin ? 'Lista fijada ✓' : 'Desanclada', 'success');
-      if (wiAuth.logged) actualizarNube(t).then(() => cloudSync(id));
+      if (wiAuth.user) actualizarNube(t).then(() => cloudSync(id));
     })
 
     // Copiar tareas
@@ -304,8 +318,8 @@ export const init = async () => {
       updateProg($card, t);
       // Al añadir la primera tarea: quitar clase vacía y revelar acciones
       if (isFirst) $card.removeClass('tr_card_empty');
-      if (wiAuth.logged) {
-        // Primera tarea: usar setDoc (crear doc), luego updateDoc
+      if (wiAuth.user) {
+        // Primera tarea: setDoc (crear doc), resto: setDoc+merge
         const op = isFirst ? guardarNube(t) : actualizarNube(t);
         op.then(() => cloudSync(id));
       }
@@ -323,7 +337,7 @@ export const init = async () => {
       ls.set(listas);
       $item.toggleClass('done', item.estado === 'completado');
       updateProg($card, t);
-      if (wiAuth.logged) actualizarNube(t);
+      if (wiAuth.user) actualizarNube(t);
     })
 
     // Editar texto de tarea
@@ -334,7 +348,7 @@ export const init = async () => {
       const item = t.tareas.find(i => i.id === idI); if (!item) return;
       item.contenido = $(this).val();
       ls.set(listas);
-      if (wiAuth.logged) actualizarNube(t);
+      if (wiAuth.user) actualizarNube(t);
     })
 
     // Eliminar tarea individual
@@ -348,7 +362,7 @@ export const init = async () => {
       ls.set(listas);
       $item.slideUp(220, function() { $(this).remove(); });
       updateProg($card, t);
-      if (wiAuth.logged) actualizarNube(t);
+      if (wiAuth.user) actualizarNube(t);
     });
 
   showi(['.tr_hero_left', '.tr_hero_right'], 50);

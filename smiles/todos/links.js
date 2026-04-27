@@ -58,30 +58,32 @@ const getFS = async () => {
 };
 
 const guardarNube = async (l) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try {
     const { db, doc, setDoc, serverTimestamp } = await getFS();
     await setDoc(doc(db, 'links', l.id), {
-      id: l.id, usuario: wi.usuario, email: wi.email,
+      id: l.id, usuario: wi.usuario || wi.email, email: wi.email,
       titulo: String(l.titulo || ''), contenido: String(l.contenido || l.url || ''),
       pin: !!l.pin, creado: serverTimestamp(), actualizado: serverTimestamp()
     });
   } catch(e) { console.error('[links] guardarNube:', e); }
 };
 
+// setDoc+merge → nunca falla si el doc no existe aún
 const actualizarNube = async (l) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try {
-    const { db, doc, updateDoc, serverTimestamp } = await getFS();
-    await updateDoc(doc(db, 'links', l.id), {
+    const { db, doc, setDoc, serverTimestamp } = await getFS();
+    await setDoc(doc(db, 'links', l.id), {
+      id: l.id, usuario: wi.usuario || wi.email, email: wi.email,
       titulo: String(l.titulo || ''), contenido: String(l.contenido || l.url || ''),
       pin: !!l.pin, actualizado: serverTimestamp()
-    });
+    }, { merge: true });
   } catch(e) { console.error('[links] actualizarNube:', e); }
 };
 
 const eliminarNube = async (id) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try { const { db, doc, deleteDoc } = await getFS(); await deleteDoc(doc(db, 'links', id)); } catch {}
 };
 
@@ -182,7 +184,7 @@ export const init = async () => {
     resumen();
     
     Notificacion('Enlace guardado', 'success');
-    if (wiAuth.logged) guardarNube(n).then(() => { n.synced = true; ls.set(links); cloudSync(n.id); });
+    if (wiAuth.user) guardarNube(n).then(() => { n.synced = true; ls.set(links); cloudSync(n.id); });
   };
 
   // ── EVENTOS ─────────────────────────────────────────────
@@ -212,7 +214,7 @@ export const init = async () => {
       $(this).closest('.lk_card').find('.lk_icon').text(init);
       
       ls.set(links);
-      if (wiAuth.logged) actualizarNube(l).then(() => cloudSync(id));
+      if (wiAuth.user) actualizarNube(l).then(() => cloudSync(id));
     })
     
     // Pin / Despin
@@ -222,7 +224,7 @@ export const init = async () => {
       l.pin = !l.pin;
       ls.set(links); render$();
       Notificacion(l.pin ? 'Enlace fijado ✓' : 'Desanclado', 'success');
-      if (wiAuth.logged) actualizarNube(l).then(() => cloudSync(id));
+      if (wiAuth.user) actualizarNube(l).then(() => cloudSync(id));
     })
     
     // Eliminar
@@ -234,7 +236,7 @@ export const init = async () => {
       $(`#lk_${id}`).css('overflow', 'hidden').slideUp(280, function() { $(this).remove(); if (!links.length) render$(); });
       resumen();
       Notificacion('Enlace eliminado', 'success');
-      if (wiAuth.logged) eliminarNube(id);
+      if (wiAuth.user) eliminarNube(id);
     })
     
     // Copiar

@@ -38,11 +38,11 @@ const getFS = async () => {
 };
 
 const guardarNube = async (d) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try {
     const { db, doc, setDoc, serverTimestamp } = await getFS();
     await setDoc(doc(db, 'tableroNotas', d.id), {
-      id: d.id, usuario: wi.usuario, email: wi.email,
+      id: d.id, usuario: wi.usuario || wi.email, email: wi.email,
       titulo: String(d.titulo || ''), contenido: String(d.contenido || ''),
       color: String(d.color || ''), pin: !!d.pin, 
       creado: serverTimestamp(), actualizado: serverTimestamp()
@@ -50,19 +50,21 @@ const guardarNube = async (d) => {
   } catch(e) { console.error('[tablero] guardarNube:', e); }
 };
 
+// setDoc+merge → nunca falla si el doc no existe aún
 const actualizarNube = async (d) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try {
-    const { db, doc, updateDoc, serverTimestamp } = await getFS();
-    await updateDoc(doc(db, 'tableroNotas', d.id), {
+    const { db, doc, setDoc, serverTimestamp } = await getFS();
+    await setDoc(doc(db, 'tableroNotas', d.id), {
+      id: d.id, usuario: wi.usuario || wi.email, email: wi.email,
       titulo: String(d.titulo || ''), contenido: String(d.contenido || ''),
       color: String(d.color || ''), pin: !!d.pin, actualizado: serverTimestamp()
-    });
+    }, { merge: true });
   } catch(e) { console.error('[tablero] actualizarNube:', e); }
 };
 
 const eliminarNube = async (id) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try { const { db, doc, deleteDoc } = await getFS(); await deleteDoc(doc(db, 'tableroNotas', id)); } catch {}
 };
 
@@ -259,14 +261,14 @@ export const init = async () => {
         items.unshift(it);
         ls.set(items);
         Notificacion('Nota actualizada', 'success');
-        if (wiAuth.logged) actualizarNube(it).then(() => { it.synced = true; ls.set(items); cloudSync(it.id); });
+        if (wiAuth.user) actualizarNube(it).then(() => { it.synced = true; ls.set(items); cloudSync(it.id); });
       } else {
         items = items.filter(n => !n.id.startsWith('ej')); // Limpiar DEMO
         const ni = { id: uid(), titulo: tit, contenido: cnt, color: currentColor, pin: false, creado: Date.now(), synced: false };
         items.unshift(ni);
         ls.set(items);
         Notificacion('Nota creada', 'success');
-        if (wiAuth.logged) guardarNube(ni).then(() => { ni.synced = true; ls.set(items); cloudSync(ni.id); });
+        if (wiAuth.user) guardarNube(ni).then(() => { ni.synced = true; ls.set(items); cloudSync(ni.id); });
       }
       
       render$();
@@ -282,7 +284,7 @@ export const init = async () => {
       l.pin = !l.pin;
       ls.set(items); render$();
       Notificacion(l.pin ? 'Nota fijada ✓' : 'Desanclada', 'success');
-      if (wiAuth.logged) actualizarNube(l).then(() => cloudSync(id));
+      if (wiAuth.user) actualizarNube(l).then(() => cloudSync(id));
     })
     
     // Editar
@@ -304,7 +306,7 @@ export const init = async () => {
       $card.css({ transform: 'scale(0.8)', opacity: 0 });
       setTimeout(() => { $card.remove(); resumen(); if(!items.length) render$(); }, 300);
       Notificacion('Nota eliminada', 'success');
-      if (wiAuth.logged) eliminarNube(id);
+      if (wiAuth.user) eliminarNube(id);
     });
 
   showi(['.tb_hero_left', '.tb_btn_new'], 50);

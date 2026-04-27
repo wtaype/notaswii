@@ -123,30 +123,32 @@ const getFS = async () => {
 };
 
 const guardarNube = async (d) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try {
     const { db, doc, setDoc, serverTimestamp } = await getFS();
     await setDoc(doc(db, 'word', d.id), {
-      id: d.id, usuario: wi.usuario, email: wi.email,
+      id: d.id, usuario: wi.usuario || wi.email, email: wi.email,
       titulo: String(d.titulo || ''), contenido: String(d.contenido || ''),
       pin: !!d.pin, creado: serverTimestamp(), actualizado: serverTimestamp()
     });
   } catch(e) { console.error('[word] guardarNube:', e); }
 };
 
+// setDoc+merge → nunca falla si el doc no existe aún
 const actualizarNube = async (d) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try {
-    const { db, doc, updateDoc, serverTimestamp } = await getFS();
-    await updateDoc(doc(db, 'word', d.id), { 
+    const { db, doc, setDoc, serverTimestamp } = await getFS();
+    await setDoc(doc(db, 'word', d.id), { 
+      id: d.id, usuario: wi.usuario || wi.email, email: wi.email,
       titulo: String(d.titulo || ''), contenido: String(d.contenido || ''), 
       pin: !!d.pin, actualizado: serverTimestamp() 
-    });
+    }, { merge: true });
   } catch(e) { console.error('[word] actualizarNube:', e); }
 };
 
 const eliminarNube = async (id) => {
-  const wi = wiAuth.user; if (!wi?.usuario) return;
+  const wi = wiAuth.user; if (!wi?.email) return;
   try { const { db, doc, deleteDoc } = await getFS(); await deleteDoc(doc(db, 'word', id)); } catch {}
 };
 
@@ -199,7 +201,7 @@ export const init = async () => {
   let act  = null;
   let savedRange = null;
 
-  if (wiAuth.logged) $('#wd_saludo').text(`${Saludar()}${wiAuth.user.nombre || wiAuth.user.usuario}`);
+  if (wiAuth.user) $('#wd_saludo').text(`${Saludar()}${wiAuth.user.nombre || wiAuth.user.usuario}`);
 
   const skeleton = () => $('#wd_sb_list').html('<div class="wd_skeleton"></div>'.repeat(3));
 
@@ -303,7 +305,7 @@ export const init = async () => {
       if (!act || !confirm('¿Eliminar este documento permanentemente?')) return;
       docs = docs.filter(x => x.id !== act.id);
       ls.set(docs);
-      if (wiAuth.logged && act.synced) eliminarNube(act.id);
+      if (wiAuth.user && act.synced) eliminarNube(act.id);
       Notificacion('Documento eliminado', 'success');
       docs.length ? cargarDocUI(sorted()[0]) : crearNuevo();
     })
@@ -312,7 +314,7 @@ export const init = async () => {
       triggerSave(); // Asegura el guardado local
       
       const hasData = act.titulo || extraerTextoPlano(act.contenido).trim().length > 0;
-      if (wiAuth.logged && hasData) {
+      if (wiAuth.user && hasData) {
         const $btn = $(this).find('i').removeClass('fa-save').addClass('fa-spinner wd_spin');
         const op = act.synced ? actualizarNube(act) : guardarNube(act);
         
@@ -327,10 +329,15 @@ export const init = async () => {
             .attr('data-witip', 'En nube');
             
           $btn.removeClass('fa-spinner wd_spin').addClass('fa-save');
-          Notificacion('Guardado en la nube', 'success');
+          Notificacion('¡Guardado con éxito! ☁️', 'success');
+        }).catch(() => {
+          $btn.removeClass('fa-spinner wd_spin').addClass('fa-save');
+          Notificacion('Error al guardar en la nube', 'error');
         });
+      } else if (wiAuth.user && !hasData) {
+        Notificacion('Agrega un título o contenido primero', 'warning');
       } else {
-        Notificacion('Guardado localmente', 'success');
+        Notificacion('Guardado localmente ✓', 'success');
       }
     })
     .on('click', '.wd_act_pin', function(e) {
@@ -339,7 +346,7 @@ export const init = async () => {
       const d = docs.find(x => x.id === id); if (!d) return;
       d.pin = !d.pin;
       ls.set(docs); renderLista();
-      if (wiAuth.logged && d.synced) actualizarNube(d);
+      if (wiAuth.user && d.synced) actualizarNube(d);
     })
     // Editor inputs
     .on('input', '#wd_editor', () => { revisarTools(); triggerSave(); })
