@@ -29,9 +29,8 @@ export const NAV = {
   smile: {
     nvleft:  [{ href: '/smile', page: 'smile', ico: 'fa-house', txt: 'Dashboard' }, ...COMUN],
     nvright: [
-      // { href: '/win',      page: 'win',      ico: 'fa-rocket', txt: 'Planificar'     },
+      { href: '/word',      page: 'word',      ico: 'fa-rocket', txt: 'Planificar'     },
       { href: '/nuevo',    page: 'nuevo',    ico: 'fa-plus',        txt: 'Post' },
-      // { href: '/notas',    page: 'notas',    ico: 'fa-note-sticky', txt: 'Notas'      },
       { href: '/mensajes', page: 'mensajes', ico: 'fa-comments',    txt: 'Mensajes'   },
       { isPerfil: true }, { isSalir: true },
     ],
@@ -39,6 +38,7 @@ export const NAV = {
   gestor: {
     nvleft:  [{ href: '/gestor', page: 'gestor', ico: 'fa-house', txt: 'Dashboard' }, ...COMUN],
     nvright: [
+      { href: '/word',      page: 'word',      ico: 'fa-rocket', txt: 'Planificar'     },
       { href: '/mensajes', page: 'mensajes', ico: 'fa-comments', txt: 'Mensajes' },
       { isPerfil: true }, { isSalir: true },
     ],
