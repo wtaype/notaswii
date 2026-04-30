@@ -8,18 +8,20 @@ const COMUN = [
   { href: '/misnotas', page: 'misnotas', ico: 'fa-note-sticky',    txt: 'Mis Notas' },
   { href: '/flash',    page: 'flash',    ico: 'fa-bolt',           txt: 'Flash' },
   { href: '/tareas',   page: 'tareas',   ico: 'fa-tasks',          txt: 'Tareas' },
-  { href: '/word',     page: 'word',     ico: 'fa-pen-to-square',  txt: 'Word' },
   { href: '/links',    page: 'links',    ico: 'fa-link',           txt: 'Links' },
   { href: '/tablero',  page: 'tablero',  ico: 'fa-th',             txt: 'Tablero' },
   { href: '/blog',     page: 'blog',     ico: 'fa-blog',           txt: 'Blog' },
   { href: '/precios',  page: 'precios',  ico: 'fa-tag',            txt: 'Precios' },
-  { href: '/acerca',   page: 'acerca',   ico: 'fa-circle-info',    txt: 'Acerca' },
 ];
 
 // ── NAV — Config visual por rol (nvleft = izquierda, nvright = derecha) ────────
 export const NAV = {
   todos: {
-    nvleft:  [{ href: '/', page: 'inicio', ico: 'fa-house', txt: 'Inicio' }, ...COMUN],
+    nvleft:  [
+      { href: '/', page: 'inicio', ico: 'fa-house', txt: 'Inicio' },
+      ...COMUN,
+      { href: '/acerca',      page: 'acerca',      ico: 'fa-info-circle',  txt: 'Acerca'    },
+    ],
     nvright: [
       { href: '/descubre', page: 'descubre', ico: 'fa-gauge',       txt: 'Descubre'  },
       { isBtn: true, cls: 'bt_auth registrar', ico: 'fa-user-plus', txt: 'Registrar' },
