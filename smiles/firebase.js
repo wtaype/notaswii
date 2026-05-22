@@ -1,9 +1,9 @@
-import { id, ipdev, linkweb} from './wii.js';
+import { id, ipdev} from './wii.js';
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-const permitir = new Set([`${id}.web.app`, ipdev, linkweb, 'localhost']); 
+const permitir = new Set([`${id}.web.app`, ipdev, 'notaswii.app', 'localhost']); 
 const permitido = permitir.has(window.location.hostname);
 
 const app = permitido ? initializeApp({
