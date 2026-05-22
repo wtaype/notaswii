@@ -7,6 +7,7 @@ export let lanzamiento = 2026;
 export let ipdev = import.meta.env.VITE_DEV;
 export let by = '@wilder.taype';
 export let linkme = 'https://wtaype.github.io/';
+export let linkweb = 'https://notaswii.app/';
 export let version = 'v15';
 
 /** ACTUALIZAR AL TAG POR SEGURIDAD [TAG NUEVO] (1)
